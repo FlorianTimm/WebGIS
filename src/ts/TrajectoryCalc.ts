@@ -1,11 +1,8 @@
 import { Feature } from "ol";
-import { linearFindNearest } from "ol/array";
 import { LineString, Polygon } from "ol/geom";
-import { fromExtent } from "ol/geom/Polygon";
-import { create } from "ol/transform";
 import Map from "./Map";
-import { intersect } from "@turf/turf";
-import GeoJSON from 'ol/format/GeoJSON';
+import { polygon, lineString, bezierSpline, lineIntersect, pointToLineDistance, point as turfPoint } from "@turf/turf";
+import { transform } from "ol/proj";
 
 export default class TrajectoryCalc {
     private map: Map;
@@ -13,19 +10,46 @@ export default class TrajectoryCalc {
         this.map = map;
     }
 
-    recalcTrajectory(polygon: Feature<Polygon>) {
-        let geom = <Polygon>polygon.getGeometry().simplify(5);
-        const format = new GeoJSON();
-        const turfPoly = format.writeFeatureObject(polygon);
+    recalcTrajectory(polygonGeom: Feature<Polygon>) {
+        let geom = <Polygon>polygonGeom.getGeometry().simplify(5);
+
         let traj = this.getLongestEdge(geom);
-
+        let poly = polygon(geom.getCoordinates())
         this.map.getTrajectorySource().clear();
-        this.map.getTrajectorySource().addFeature(new Feature({ geometry: traj }))
+        //this.map.getTrajectorySource().addFeature(new Feature({ geometry: traj }))
 
-        for (let i = 1000; i < 5000; i += 1000) {
+        let maxd = 0;
+        let ls4326 = <LineString>traj.clone().transform('EPSG:3857', 'EPSG:4326');
+        let ls = lineString(ls4326.getCoordinates());
+        console.log(ls);
+        let poly4326 = <Polygon>polygonGeom.getGeometry().clone().transform('EPSG:3857', 'EPSG:4326');
+        poly4326.getCoordinates()[0].forEach((p) => {
+            let point = turfPoint(p);
+            console.log(point);
+            let d = pointToLineDistance(point, ls, { units: 'meters' })
+            console.log(d);
+            if (d > maxd) maxd = d;
+        })
+
+        console.log(maxd);
+
+        let coords = [];
+        let grenze = Math.ceil(maxd / 1000) * 1000;
+        for (let i = -grenze; i <= grenze; i += 1000) {
             let line = this.createParallelLine(traj, i);
-            this.map.getTrajectorySource().addFeature(new Feature({ geometry: line }))
+            let is = lineIntersect(lineString(line.getCoordinates()), poly).features;
+            let coord = []
+            is.forEach((feature) => {
+                coord.push(feature.geometry.coordinates);
+            });
+            if (i % 2000 == 0) coord.reverse();
+            coords.push(...coord);
         }
+        console.log(coords)
+        let line = new LineString(coords);
+        //this.map.getTrajectorySource().addFeature(new Feature({ geometry: line }))
+        let spline = this.createSpline(line);
+        this.map.getTrajectorySource().addFeature(new Feature({ geometry: spline }))
     }
 
     private getLongestEdge(geom: Polygon) {
@@ -47,7 +71,7 @@ export default class TrajectoryCalc {
         return longestEdge;
     }
 
-    getNormalVector(geom: LineString) {
+    private getNormalVector(geom: LineString) {
         let a = geom.getFirstCoordinate();
         let b = geom.getLastCoordinate();
 
@@ -59,7 +83,7 @@ export default class TrajectoryCalc {
         return [dy / len, -dx / len];
     }
 
-    createParallelLine(geom: LineString, distance: number) {
+    private createParallelLine(geom: LineString, distance: number, samedirection = true) {
         let newgeom = [];
         let normal = this.getNormalVector(geom);
         geom.getCoordinates().forEach((point) => {
@@ -67,7 +91,14 @@ export default class TrajectoryCalc {
             let y = point[1] + normal[1] * distance;
             newgeom.push([x, y]);
         })
+        if (!samedirection) newgeom.reverse();
         console.log(newgeom);
         return new LineString(newgeom);
+    }
+
+    private createSpline(geom: LineString) {
+        let ls = lineString(geom.getCoordinates());
+        let bs = bezierSpline(ls, { sharpness: 0.5 });
+        return new LineString(bs.geometry.coordinates);
     }
 }
