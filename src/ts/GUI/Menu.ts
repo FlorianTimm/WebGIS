@@ -6,5 +6,5 @@ export default abstract class Menu {
         this.create();
     }
 
-    abstract create(): void
+    protected abstract create(): void
 }
