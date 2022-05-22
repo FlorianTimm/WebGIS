@@ -1,15 +1,17 @@
 import Menu from "./Menu";
-import HTML from "./HTML"
+import HTML, { HTMLSelectElementArray } from "./HTML"
 import Map from "../Map";
 import Draw from 'ol/interaction/Draw';
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import Zeichnen from "./Zeichnen";
+import UAV from "../UAV";
 
 export default class Hauptmenu extends Menu {
     private map: Map;
     private buttonZeichnen: HTMLButtonElement;
     private source: VectorSource
+    private uavSelect: HTMLSelectElementArray<UAV>;
 
     constructor(div: HTMLElement, map: Map) {
         super(div);
@@ -25,7 +27,8 @@ export default class Hauptmenu extends Menu {
 
     protected create(): void {
         this.div.innerHTML = "";
-        this.buttonZeichnen = HTML.createButton(this.div, "Gebiet zeichnen")
+        this.uavSelect = HTML.createSelect(this.div, "UAV", [new UAV("Test-UAV", 50, 100, 50, 10)]);
+        this.buttonZeichnen = HTML.createButton(this.div, "Gebiet zeichnen");
 
     }
 
