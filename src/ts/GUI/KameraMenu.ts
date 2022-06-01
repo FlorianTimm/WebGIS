@@ -1,8 +1,20 @@
+import { Color } from "ol/color";
 import Menu from "./Menu";
 
 export default class KameraMenu extends Menu {
-    create(): void {
-        throw new Error("Method not implemented.");
+
+    constructor(div?: HTMLElement) {
+        super(div);
+        div = this.getDiv();
+        div.innerHTML = "KameraMenü";
+    }
+
+    public getName(): string {
+        return "UAV";
+    }
+
+    public getColor(): Color {
+        return [200, 0, 200]
     }
 
 }

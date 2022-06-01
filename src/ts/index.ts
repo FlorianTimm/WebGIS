@@ -3,9 +3,27 @@ import '../../node_modules/ol/ol.css'
 import '../style/index.css';
 import Map from "./Map";
 import Hauptmenu from "./GUI/Hauptmenu";
+import { Navigation } from "./GUI/Navigation";
+import { LayerMenu } from "./GUI/LayerMenu";
+import KameraMenu from "./GUI/KameraMenu";
 
 let map = new Map();
 
-let nav = $('nav')[0];
-console.log(nav);
-new Hauptmenu(nav, map);
+createMenu();
+
+function createMenu() {
+    let navigation = new Navigation($('nav')[0], $('sidebar')[0]);
+
+    // Hauptmenü
+    let hm = new Hauptmenu(map);
+    navigation.appendMenu(hm);
+
+    // Layer
+    let lm = new LayerMenu(map);
+    navigation.appendMenu(lm);
+
+    // UAV-Auswahl
+    let um = new KameraMenu();
+    navigation.appendMenu(um);
+}
+

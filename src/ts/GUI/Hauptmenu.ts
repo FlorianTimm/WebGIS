@@ -6,6 +6,7 @@ import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import Zeichnen from "./Zeichnen";
 import UAV from "../UAV";
+import { Color } from "ol/color";
 
 export default class Hauptmenu extends Menu {
     private map: Map;
@@ -13,7 +14,7 @@ export default class Hauptmenu extends Menu {
     private source: VectorSource
     private uavSelect: HTMLSelectElementArray<UAV>;
 
-    constructor(div: HTMLElement, map: Map) {
+    constructor(map: Map, div?: HTMLElement,) {
         super(div);
         this.map = map;
 
@@ -23,15 +24,17 @@ export default class Hauptmenu extends Menu {
 
         new Zeichnen(this.map, this.buttonZeichnen);
 
-    }
-
-    protected create(): void {
-        this.div.innerHTML = "";
-        this.uavSelect = HTML.createSelect(this.div, "UAV", [new UAV("Test-UAV", 50, 100, 50, 10)]);
-        this.buttonZeichnen = HTML.createButton(this.div, "Gebiet zeichnen");
+        this.uavSelect = HTML.createSelect(this.getDiv(), "UAV", [new UAV("Test-UAV", 50, 100, 50, 10)]);
+        this.buttonZeichnen = HTML.createButton(this.getDiv(), "Gebiet zeichnen");
 
     }
 
+    public getName(): string {
+        return "Hauptmenü";
+    }
 
+    public getColor(): Color {
+        return [200, 200, 0]
+    }
 
 }

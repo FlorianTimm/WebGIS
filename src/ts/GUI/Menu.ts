@@ -1,10 +1,16 @@
-export default abstract class Menu {
-    protected div: HTMLElement;
+import { Color } from "ol/color";
 
-    constructor(div: HTMLElement) {
-        this.div = div;
-        this.create();
+export default abstract class Menu {
+    private div: HTMLElement;
+
+    constructor(div?: HTMLElement) {
+        this.div = div ?? document.createElement('div');
     }
 
-    protected abstract create(): void
+    public abstract getName(): string;
+    public abstract getColor(): Color
+
+    public getDiv(): HTMLElement {
+        return this.div;
+    }
 }
