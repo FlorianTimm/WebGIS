@@ -8,7 +8,8 @@ import { DoubleClickZoom } from "ol/interaction";
 import Style from "ol/style/Style";
 import Stroke from "ol/style/Stroke";
 import TileWMS from 'ol/source/TileWMS';
-import { TileLayer } from "./openLayers/Layer";
+import { TileLayer, ImageLayer } from "./openLayers/Layer";
+import { ImageWMS } from "ol/source";
 
 export default class Map extends OpenLayersMap {
 
@@ -68,10 +69,10 @@ export default class Map extends OpenLayersMap {
                         attributions: [fhh]
                     }),
                 }),
-                new TileLayer({
+                new ImageLayer<ImageWMS>({
                     name: "Gebietsgrenzen",
                     switchable: true,
-                    source: new TileWMS({
+                    source: new ImageWMS({
                         url: 'https://sgx.geodatenzentrum.de/wms_vg250?',
                         params: { 'LAYERS': 'vg250_lan,vg250_rbz,vg250_krs' },
                         attributions: [bkg]

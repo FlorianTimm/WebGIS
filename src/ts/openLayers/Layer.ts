@@ -51,7 +51,7 @@ export class TileLayer<TileSourceType extends TileSource> extends Tile<TileSourc
 export interface ImageOptions<ImageSourceType extends ImageSource> extends ImageOptionsOl<ImageSourceType> {
     name?: string;
     switchable?: boolean;
-    backgroundLayer: boolean;
+    backgroundLayer?: boolean;
 }
 
 /**
