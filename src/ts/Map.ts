@@ -17,23 +17,18 @@ export default class Map extends OpenLayersMap {
 
     constructor() {
 
-        var fhh = '&copy; Freie und Hansestadt Hamburg, Behörde für Verkehr und Mobilitätswende'
-        var lgv = '&copy; Freie und Hansestadt Hamburg, Landesbetrieb Geoinformation und Vermessung'
+        var fhh = '&copy; Freie und Hansestadt Hamburg, Behörde für Verkehr und Mobilitätswende';
+        var lgv = '&copy; Freie und Hansestadt Hamburg, Landesbetrieb Geoinformation und Vermessung';
+        var bkg = '&copy; GeoBasis-DE / BKG 2022';
 
         super({
             target: 'map',
             layers: [
                 new TileLayer({
-                    name: "OpenStreetMap",
-                    switchable: true,
-                    backgroundLayer: true,
-                    source: new OSM()
-                }),
-                new TileLayer({
                     name: 'LGV schwarz-grau',
                     backgroundLayer: true,
                     switchable: true,
-                    visible: false,
+                    visible: true,
                     source: new TileWMS({
                         url: 'https://geodienste.hamburg.de/HH_WMS_Geobasiskarten_SG?',
                         params: {
@@ -45,12 +40,41 @@ export default class Map extends OpenLayersMap {
                     })
                 }),
                 new TileLayer({
+                    name: "OpenStreetMap",
+                    switchable: true,
+                    backgroundLayer: true,
+                    visible: false,
+                    source: new OSM()
+                }),
+                new TileLayer({
+                    name: "BaseMapDE",
+                    backgroundLayer: true,
+                    switchable: true,
+                    visible: false,
+                    source: new TileWMS({
+                        url: 'https://sgx.geodatenzentrum.de/wms_basemapde?',
+                        params: {
+                            'LAYERS': 'de_basemapde_web_raster_grau'
+                        }
+                    })
+                }),
+
+                new TileLayer({
                     name: "Flugverbotszonen Hamburg",
                     switchable: true,
                     source: new TileWMS({
                         url: 'https://geodienste.hamburg.de/HH_WMS_Drohnenflugverbotszonen',
                         params: { 'LAYERS': 'Krankenhaeuser,Flugplaetze,Hubschrauberlandeplaetze' },
                         attributions: [fhh]
+                    }),
+                }),
+                new TileLayer({
+                    name: "Gebietsgrenzen",
+                    switchable: true,
+                    source: new TileWMS({
+                        url: 'https://sgx.geodatenzentrum.de/wms_vg250?',
+                        params: { 'LAYERS': 'vg250_lan,vg250_rbz,vg250_krs' },
+                        attributions: [bkg]
                     }),
                 }),
             ],

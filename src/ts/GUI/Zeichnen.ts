@@ -21,7 +21,10 @@ export default class Zeichnen extends Draw {
         this.setActive(false)
         this.map.addInteraction(this)
 
-        $(this.button).on('click', () => { this.button_click() })
+        this.button.addEventListener('click', () => {
+            console.log("Zeichnen");
+            this.button_click()
+        })
     }
 
     private zeichnen_fertig(event: DrawEvent) {

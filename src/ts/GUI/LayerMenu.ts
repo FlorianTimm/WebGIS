@@ -44,7 +44,6 @@ export class LayerMenu extends Menu {
                 radio.type = "checkbox";
             }
             radio.addEventListener('change', () => {
-                console.log(layer.get("name"));
                 this.layerButton.forEach((item) => {
                     item.layer.setVisible(item.radio.checked)
                 })

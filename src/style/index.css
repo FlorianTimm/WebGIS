@@ -56,6 +56,10 @@ sidebar div {
     display: none;
 }
 
+sidebar div>* {
+    margin: 5px;
+}
+
 sidebar div:first-child {
     display: block;
 }

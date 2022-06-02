@@ -1,7 +1,6 @@
 import Menu from "./Menu";
 import HTML, { HTMLSelectElementArray } from "./HTML"
 import Map from "../Map";
-import Draw from 'ol/interaction/Draw';
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import Zeichnen from "./Zeichnen";
@@ -22,11 +21,10 @@ export default class Hauptmenu extends Menu {
         let layer = new VectorLayer({ source: this.source })
         this.map.addLayer(layer)
 
-        new Zeichnen(this.map, this.buttonZeichnen);
-
         this.uavSelect = HTML.createSelect(this.getDiv(), "UAV", [new UAV("Test-UAV", 50, 100, 50, 10)]);
         this.buttonZeichnen = HTML.createButton(this.getDiv(), "Gebiet zeichnen");
 
+        new Zeichnen(this.map, this.buttonZeichnen);
     }
 
     public getName(): string {

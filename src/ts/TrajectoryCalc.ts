@@ -92,7 +92,7 @@ export default class TrajectoryCalc {
             newgeom.push([x, y]);
         })
         if (!samedirection) newgeom.reverse();
-        console.log(newgeom);
+        //console.log(newgeom);
         return new LineString(newgeom);
     }
 
