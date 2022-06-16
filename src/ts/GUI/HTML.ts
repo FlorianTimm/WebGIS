@@ -1,4 +1,5 @@
 export default class HTML {
+
     static createButton(parent: HTMLElement, beschriftung: string): HTMLInputElement {
         let button = document.createElement("input");
         button.setAttribute("type", "button");
@@ -19,6 +20,20 @@ export default class HTML {
         return input;
     }
 
+    static createSlider(parent: HTMLElement, beschriftung: string, von: number, bis: number, voreingestellt?: number, takt?: number): HTMLInputElement {
+        let input = document.createElement("input");
+
+        input.setAttribute("type", "range");
+        input.value = (voreingestellt ?? 0).toString();
+        input.min = (von ?? 0).toString();
+        input.max = (bis ?? 100).toString();
+        input.step = (takt ?? 5).toString();
+
+        HTML.createLabel(beschriftung, input, parent);
+
+        parent.appendChild(input);
+        return input;
+    }
 
     protected static createLabel(beschriftung: string, input: HTMLElement, parent: HTMLElement) {
         let label: HTMLLabelElement = document.createElement("label");

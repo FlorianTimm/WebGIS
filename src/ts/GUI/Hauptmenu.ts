@@ -11,6 +11,7 @@ export default class Hauptmenu extends Menu {
     private map: Map;
     private buttonZeichnen: HTMLButtonElement;
     private source: VectorSource
+    private sliderAusrichtung: HTMLInputElement;
     private uavSelect: HTMLSelectElementArray<UAV>;
 
     constructor(map: Map, div?: HTMLElement,) {
@@ -23,8 +24,9 @@ export default class Hauptmenu extends Menu {
 
         this.uavSelect = HTML.createSelect(this.getDiv(), "UAV", [new UAV("Test-UAV", 50, 100, 50, 10)]);
         this.buttonZeichnen = HTML.createButton(this.getDiv(), "Gebiet zeichnen");
+        this.sliderAusrichtung = HTML.createSlider(this.getDiv(), "Ausrichtung", 0, 360, 0, 10);
 
-        new Zeichnen(this.map, this.buttonZeichnen);
+        new Zeichnen(this.map, this.buttonZeichnen, this.sliderAusrichtung);
     }
 
     public getName(): string {

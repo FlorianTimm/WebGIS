@@ -3,6 +3,7 @@ import { LineString, Polygon } from "ol/geom";
 import Map from "./Map";
 import { polygon, lineString, bezierSpline, lineIntersect, pointToLineDistance, point as turfPoint } from "@turf/turf";
 import { transform } from "ol/proj";
+import { distance } from "ol/coordinate";
 
 export default class TrajectoryCalc {
     private map: Map;
@@ -10,7 +11,7 @@ export default class TrajectoryCalc {
         this.map = map;
     }
 
-    recalcTrajectory(polygonGeom: Feature<Polygon>) {
+    recalcTrajectory(polygonGeom: Feature<Polygon>, ausrichtung: number) {
         let geom = <Polygon>polygonGeom.getGeometry().simplify(5);
 
         let traj = this.getLongestEdge(geom);
@@ -32,24 +33,26 @@ export default class TrajectoryCalc {
         })
 
         console.log(maxd);
+        const distance = 10 * ausrichtung + 1;
 
         let coords = [];
-        let grenze = Math.ceil(maxd / 1000) * 1000;
-        for (let i = -grenze; i <= grenze; i += 1000) {
+        let grenze = Math.ceil(maxd / distance) * distance;
+        for (let i = -grenze; i <= grenze; i += distance) {
             let line = this.createParallelLine(traj, i);
             let is = lineIntersect(lineString(line.getCoordinates()), poly).features;
             let coord = []
             is.forEach((feature) => {
                 coord.push(feature.geometry.coordinates);
             });
-            if (i % 2000 == 0) coord.reverse();
+            if (i <= 0) coord.reverse();
+            if (i % (2 * distance) == 0) coord.reverse();
             coords.push(...coord);
         }
         console.log(coords)
         let line = new LineString(coords);
-        //this.map.getTrajectorySource().addFeature(new Feature({ geometry: line }))
-        let spline = this.createSpline(line);
-        this.map.getTrajectorySource().addFeature(new Feature({ geometry: spline }))
+        this.map.getTrajectorySource().addFeature(new Feature({ geometry: line }))
+        //let spline = this.createSpline(line);
+        //this.map.getTrajectorySource().addFeature(new Feature({ geometry: spline }))
     }
 
     private getLongestEdge(geom: Polygon) {
