@@ -12,7 +12,11 @@ export default class Hauptmenu extends Menu {
     private buttonZeichnen: HTMLButtonElement;
     private source: VectorSource
     private sliderAusrichtung: HTMLInputElement;
+    private sliderAuflösung: HTMLInputElement;
+    private sliderUeberlappungLaengs: HTMLInputElement;
+    private sliderUeberlappungQuer: HTMLInputElement;
     private uavSelect: HTMLSelectElementArray<UAV>;
+
 
     constructor(map: Map, div?: HTMLElement,) {
         super(div);
@@ -25,8 +29,18 @@ export default class Hauptmenu extends Menu {
         this.uavSelect = HTML.createSelect(this.getDiv(), "UAV", [new UAV("Test-UAV", 50, 100, 50, 10)]);
         this.buttonZeichnen = HTML.createButton(this.getDiv(), "Gebiet zeichnen");
         this.sliderAusrichtung = HTML.createSlider(this.getDiv(), "Ausrichtung", 0, 360, 0, 10);
+        this.sliderAuflösung = HTML.createSlider(this.getDiv(), "Auflösung [cm/px]", 0, 10, 2, 0.5);
+        this.sliderUeberlappungLaengs = HTML.createSlider(this.getDiv(), "Überlappung längs [%]", 0, 90, 50, 5);
+        this.sliderUeberlappungQuer = HTML.createSlider(this.getDiv(), "Überlappung quer [%]", 0, 90, 50, 5);
 
-        new Zeichnen(this.map, this.buttonZeichnen, this.sliderAusrichtung);
+        new Zeichnen(this.map, {
+            button: this.buttonZeichnen,
+            ausrichtung: this.sliderAusrichtung,
+            ueberlappungLaengs: this.sliderUeberlappungLaengs,
+            ueberlappungQuer: this.sliderUeberlappungQuer,
+            aufloesung: this.sliderAuflösung,
+            uav: this.uavSelect
+        });
     }
 
     public getName(): string {
