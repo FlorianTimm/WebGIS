@@ -29,8 +29,15 @@ export default class HTML {
         input.max = (bis ?? 100).toString();
         input.step = (takt ?? 5).toString();
 
+        let wert = document.createElement("span")
+        wert.innerHTML = input.value
+        input.onchange = () => {
+            wert.innerHTML = input.value
+        }
+
         HTML.createLabel(beschriftung, input, parent);
 
+        parent.appendChild(wert);
         parent.appendChild(input);
         return input;
     }

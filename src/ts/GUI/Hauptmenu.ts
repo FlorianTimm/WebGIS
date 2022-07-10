@@ -29,7 +29,7 @@ export default class Hauptmenu extends Menu {
         this.uavSelect = HTML.createSelect(this.getDiv(), "UAV", UAV.getUAVs());
         this.buttonZeichnen = HTML.createButton(this.getDiv(), "Gebiet zeichnen");
         this.sliderAusrichtung = HTML.createSlider(this.getDiv(), "Ausrichtung", 0, 360, 0, 10);
-        this.sliderAuflösung = HTML.createSlider(this.getDiv(), "Auflösung [cm/px]", 0, 10, 2, 0.5);
+        this.sliderAuflösung = HTML.createSlider(this.getDiv(), "Auflösung [cm/px]", 1, 20, 2, 0.5);
         this.sliderUeberlappungLaengs = HTML.createSlider(this.getDiv(), "Überlappung längs [%]", 0, 90, 50, 5);
         this.sliderUeberlappungQuer = HTML.createSlider(this.getDiv(), "Überlappung quer [%]", 0, 90, 50, 5);
 
