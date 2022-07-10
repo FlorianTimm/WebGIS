@@ -66,6 +66,7 @@ export class HTMLSelectElementArray<T> {
     private htmlElement: HTMLSelectElement;
     private array: T[];
     constructor(liste?: T[], parent?: HTMLElement) {
+        this.array = liste;
         this.htmlElement = document.createElement("select");
         if (liste) {
             liste.forEach((eintrag) => {
@@ -82,5 +83,9 @@ export class HTMLSelectElementArray<T> {
 
     getHTMLElement() {
         return this.htmlElement;
+    }
+
+    getSelectedEntry(): T {
+        return this.array[this.htmlElement.selectedIndex]
     }
 }

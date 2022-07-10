@@ -68,10 +68,10 @@ export default class Zeichnen extends Draw {
         if (!this._gebiet) return;
         this._tc.gebiet = this._gebiet;
         this._tc.ausrichtung = parseInt(this._ausrichtungSlider.value);
-        this._tc.ueberlappungQuer = parseInt(this._ueberlappungQuerSlider.value);
-        this._tc.ueberlappungLaengs = parseInt(this._ueberlappungLaengsSlider.value);
-        this._tc.aufloesung = parseInt(this._aufloesungSlider.value);
-        //this.tc.setUAV()
+        this._tc.ueberlappungQuer = parseInt(this._ueberlappungQuerSlider.value) / 100;
+        this._tc.ueberlappungLaengs = parseInt(this._ueberlappungLaengsSlider.value) / 100;
+        this._tc.aufloesung = parseInt(this._aufloesungSlider.value) / 100;
+        this._tc.uav = this._uavSelect.getSelectedEntry();
         this._tc.recalcTrajectory()
     }
 

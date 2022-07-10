@@ -26,7 +26,7 @@ export default class Hauptmenu extends Menu {
         let layer = new VectorLayer({ source: this.source })
         this.map.addLayer(layer)
 
-        this.uavSelect = HTML.createSelect(this.getDiv(), "UAV", [new UAV("Test-UAV", 50, 100, 50, 10)]);
+        this.uavSelect = HTML.createSelect(this.getDiv(), "UAV", UAV.getUAVs());
         this.buttonZeichnen = HTML.createButton(this.getDiv(), "Gebiet zeichnen");
         this.sliderAusrichtung = HTML.createSlider(this.getDiv(), "Ausrichtung", 0, 360, 0, 10);
         this.sliderAuflösung = HTML.createSlider(this.getDiv(), "Auflösung [cm/px]", 0, 10, 2, 0.5);

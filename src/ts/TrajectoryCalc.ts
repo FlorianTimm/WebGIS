@@ -2,6 +2,8 @@ import { Feature } from "ol";
 import { LineString, Polygon } from "ol/geom";
 import Map from "./Map";
 import { polygon, lineString, bezierSpline, lineIntersect, pointToLineDistance, point as turfPoint } from "@turf/turf";
+import UAV from "./UAV";
+import { distance } from "ol/coordinate";
 
 export default class TrajectoryCalc {
     private map: Map;
@@ -12,19 +14,38 @@ export default class TrajectoryCalc {
     private _aufloesung: number = 5;
     private _distanceQuer: number;
     private _distanceLaengs: number;
+    private _uav: UAV;
+
 
     constructor(map: Map) {
         this.map = map;
     }
 
-    private calculateDistance() {
+    private calculateDistance(): boolean {
+        if (this._uav === undefined) return false;
+        if (this._ueberlappungLaengs === undefined) return false;
+        if (this._ueberlappungQuer === undefined) return false;
+        if (this._aufloesung === undefined) return false;
+
         this._distanceQuer = 100;
         this._distanceLaengs = 100;
+        const pixelGroesse = this._uav.sensorSize[0] / this._uav.sensorPixel[0];
+        const flughoehe = this._uav.focusLength / pixelGroesse * this.aufloesung
+        const bildGroesseBoden: [number, number] = [this._uav.sensorSize[0] / this._uav.focusLength * flughoehe, this._uav.sensorSize[1] / this._uav.focusLength * flughoehe]
+        this._distanceLaengs = bildGroesseBoden[0] * (1 - this._ueberlappungLaengs)
+        this._distanceQuer = bildGroesseBoden[1] * (1 - this._ueberlappungQuer)
+
+        console.log("Bodenauflösung", this._aufloesung);
+        console.log("pixelGroesse", pixelGroesse);
+        console.log("flughoehe", flughoehe);
+        console.log("bildGroesse", bildGroesseBoden);
+        return true;
     }
 
     recalcTrajectory() {
-        let geom = <Polygon>this.gebiet.getGeometry().simplify(5);
 
+        let geom = <Polygon>this.gebiet.getGeometry().simplify(5);
+        if (!this.calculateDistance()) return;
         let traj = this.getLongestEdge(geom);
         let poly = polygon(geom.getCoordinates())
         this.map.getTrajectorySource().clear();
@@ -159,6 +180,14 @@ export default class TrajectoryCalc {
     public set ueberlappungLaengs(value: number) {
         if (this._ueberlappungLaengs == value) return;
         this._ueberlappungLaengs = value;
+        this.recalcTrajectory();
+    }
+
+    public get uav() {
+        return this._uav;
+    }
+    public set uav(value: UAV) {
+        this._uav = value;
         this.recalcTrajectory();
     }
 }
