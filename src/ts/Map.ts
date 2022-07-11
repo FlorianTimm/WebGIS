@@ -1,20 +1,19 @@
 import { Map as OpenLayersMap, View } from "ol";
-import { fromLonLat } from "ol/proj";
-import OSM from "ol/source/OSM";
-import VectorLayer from "ol/layer/Vector";
-import VectorSource from "ol/source/Vector";
-import { LineString, Polygon } from "ol/geom";
+import { LineString, Point, Polygon } from "ol/geom";
 import { DoubleClickZoom } from "ol/interaction";
-import Style from "ol/style/Style";
-import Stroke from "ol/style/Stroke";
-import TileWMS from 'ol/source/TileWMS';
-import { TileLayer, ImageLayer } from "./openLayers/Layer";
+import VectorLayer from "ol/layer/Vector";
+import { fromLonLat } from "ol/proj";
 import { ImageWMS } from "ol/source";
+import OSM from "ol/source/OSM";
+import TileWMS from 'ol/source/TileWMS';
+import VectorSource from "ol/source/Vector";
+import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
+import { ImageLayer, TileLayer } from "./openLayers/Layer";
 
 export default class Map extends OpenLayersMap {
 
     private zeichenSource: VectorSource<Polygon>;
-    private trajectorySource: VectorSource<LineString>;
+    private trajectorySource: VectorSource<LineString | Point>;
 
     constructor() {
 
@@ -89,12 +88,19 @@ export default class Map extends OpenLayersMap {
         let zeichenLayer = new VectorLayer({ source: this.zeichenSource });
         this.addLayer(zeichenLayer)
 
-        this.trajectorySource = new VectorSource<LineString>({});
+        this.trajectorySource = new VectorSource<LineString | Point>({});
         let trajectoryLayer = new VectorLayer({
             source: this.trajectorySource, style: new Style({
                 stroke: new Stroke({
                     width: 3,
                     color: '#ff0000'
+                }),
+
+                image: new CircleStyle({
+                    radius: 7,
+                    fill: new Fill({
+                        color: '#ffcc33',
+                    }),
                 }),
 
             })

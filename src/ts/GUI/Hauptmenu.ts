@@ -8,39 +8,31 @@ import UAV from "../UAV";
 import { Color } from "ol/color";
 
 export default class Hauptmenu extends Menu {
-    private map: Map;
-    private buttonZeichnen: HTMLButtonElement;
-    private source: VectorSource
-    private sliderAusrichtung: HTMLInputElement;
-    private sliderAuflösung: HTMLInputElement;
-    private sliderUeberlappungLaengs: HTMLInputElement;
-    private sliderUeberlappungQuer: HTMLInputElement;
+    private _map: Map;
+    private _buttonZeichnen: HTMLButtonElement;
+    private _source: VectorSource
+    private _sliderAusrichtung: HTMLInputElement;
+    private _sliderAuflösung: HTMLInputElement;
+    private _sliderUeberlappungLaengs: HTMLInputElement;
+    private _sliderUeberlappungQuer: HTMLInputElement;
     private uavSelect: HTMLSelectElementArray<UAV>;
+    private _hoeheBegrenzen: HTMLInputElement;
+    private _flugHoehe: HTMLInputElement;
+    private _flugLaenge: HTMLInputElement;
+    private _flugDauer: HTMLInputElement;
+    private _bildAnzahl: HTMLInputElement;
 
 
     constructor(map: Map, div?: HTMLElement,) {
         super(div);
-        this.map = map;
+        this._map = map;
 
-        this.source = new VectorSource({})
-        let layer = new VectorLayer({ source: this.source })
-        this.map.addLayer(layer)
+        this._source = new VectorSource({})
+        let layer = new VectorLayer({ source: this._source })
+        this._map.addLayer(layer)
 
-        this.uavSelect = HTML.createSelect(this.getDiv(), "UAV", UAV.getUAVs());
-        this.buttonZeichnen = HTML.createButton(this.getDiv(), "Gebiet zeichnen");
-        this.sliderAusrichtung = HTML.createSlider(this.getDiv(), "Ausrichtung", 0, 360, 0, 10);
-        this.sliderAuflösung = HTML.createSlider(this.getDiv(), "Auflösung [cm/px]", 1, 20, 2, 0.5);
-        this.sliderUeberlappungLaengs = HTML.createSlider(this.getDiv(), "Überlappung längs [%]", 0, 90, 50, 5);
-        this.sliderUeberlappungQuer = HTML.createSlider(this.getDiv(), "Überlappung quer [%]", 0, 90, 50, 5);
 
-        new Zeichnen(this.map, {
-            button: this.buttonZeichnen,
-            ausrichtung: this.sliderAusrichtung,
-            ueberlappungLaengs: this.sliderUeberlappungLaengs,
-            ueberlappungQuer: this.sliderUeberlappungQuer,
-            aufloesung: this.sliderAuflösung,
-            uav: this.uavSelect
-        });
+        new Zeichnen(this._map, this.getDiv());
     }
 
     public getName(): string {

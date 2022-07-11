@@ -1,13 +1,11 @@
 import { Feature } from "ol";
-import { LineString, Polygon } from "ol/geom";
+import { LineString, Point, Polygon } from "ol/geom";
 import Map from "./Map";
-import { polygon, lineString, bezierSpline, lineIntersect, pointToLineDistance, point as turfPoint, feature, buffer, difference } from "@turf/turf";
+import { polygon, lineString, bezierSpline, lineIntersect, toWgs84, pointToLineDistance, point as turfPoint, feature, buffer, difference, length as turfLength, along, toMercator } from "@turf/turf";
 import UAV from "./UAV";
-import { distance } from "ol/coordinate";
-import { Extent } from "ol/src";
 
 export default class TrajectoryCalc {
-    private map: Map;
+    private _map: Map;
     private _gebiet: Feature<Polygon>;
     private _ausrichtung: number = 0;
     private _ueberlappungQuer: number = 50;
@@ -16,10 +14,14 @@ export default class TrajectoryCalc {
     private _distanceQuer: number;
     private _distanceLaengs: number;
     private _uav: UAV;
+    private _hoeheBegrenzen: boolean = false;
+    private _callback: (hoehe: number, laenge: number, dauer: number, anzahl: number) => void;
+    private _flughoehe: number;
 
 
-    constructor(map: Map) {
-        this.map = map;
+    constructor(map: Map, callback: (hoehe: number, laenge: number, dauer: number, anzahl: number) => void) {
+        this._map = map;
+        this._callback = callback;
     }
 
     private calculateDistance(): boolean {
@@ -31,14 +33,14 @@ export default class TrajectoryCalc {
         this._distanceQuer = 100;
         this._distanceLaengs = 100;
         const pixelGroesse = this._uav.sensorSize[0] / this._uav.sensorPixel[0];
-        const flughoehe = this._uav.focusLength / pixelGroesse * this.aufloesung
-        const bildGroesseBoden: [number, number] = [this._uav.sensorSize[0] / this._uav.focusLength * flughoehe, this._uav.sensorSize[1] / this._uav.focusLength * flughoehe]
+        this._flughoehe = this._uav.focusLength / pixelGroesse * this.aufloesung;
+        if (this._hoeheBegrenzen && this._flughoehe > 100) this._flughoehe = 100;
+        const bildGroesseBoden: [number, number] = [this._uav.sensorSize[0] / this._uav.focusLength * this._flughoehe, this._uav.sensorSize[1] / this._uav.focusLength * this._flughoehe]
         this._distanceLaengs = bildGroesseBoden[0] * (1 - this._ueberlappungLaengs)
         this._distanceQuer = bildGroesseBoden[1] * (1 - this._ueberlappungQuer)
 
         console.log("Bodenauflösung", this._aufloesung);
         console.log("pixelGroesse", pixelGroesse);
-        console.log("flughoehe", flughoehe);
         console.log("bildGroesse", bildGroesseBoden);
         return true;
     }
@@ -46,8 +48,9 @@ export default class TrajectoryCalc {
     recalcTrajectory() {
 
         let geom = <Polygon>this.gebiet.getGeometry().simplify(5);
+        let anzahlBilder = 0;
         if (!this.calculateDistance()) return;
-        this.map.getTrajectorySource().clear();
+        this._map.getTrajectorySource().clear();
         let poly4326 = <Polygon>geom.clone().transform('EPSG:3857', 'EPSG:4326');
         let buff = new Polygon(buffer(polygon(poly4326.getCoordinates()), Math.max(this._distanceQuer, this._distanceLaengs) / 1000, { units: 'kilometers', steps: 1 }).geometry.coordinates);
         buff.transform('EPSG:4326', 'EPSG:3857');
@@ -57,7 +60,7 @@ export default class TrajectoryCalc {
 
         //
         // [minx, miny, maxx, maxy]
-        let extent: Extent = buff.getExtent()
+        let extent = buff.getExtent()
         let minx = extent[0]
         let miny = extent[1]
         let maxxDiff = extent[2] - minx
@@ -88,25 +91,39 @@ export default class TrajectoryCalc {
                 return 0;
             });
 
-            if (i % 2 == 0) {
-                cut.forEach((f) => {
-                    coords.push(f.geometry.coordinates);
-                })
 
 
-            } else {
+            if (i % 2 != 0) {
                 cut = cut.reverse()
-                cut.forEach((f) => {
-                    coords.push(f.geometry.coordinates);
-                })
+            }
+
+            let cutArray = []
+            cut.forEach((f) => {
+                let c = f.geometry.coordinates
+                coords.push(c);
+                cutArray.push(c);
+            })
+
+            for (let j = 0; j <= cutArray.length - 1; j += 2) {
+                let line = toWgs84(lineString([cutArray[j], cutArray[j + 1]]));
+                let l = turfLength(line);
+                let versatz = (l % (this._distanceLaengs / 1000)) / 2;
+
+                for (; versatz < l; versatz += this._distanceLaengs / 1000) {
+                    let p = new Point(toMercator(along(line, versatz).geometry.coordinates));
+                    this._map.getTrajectorySource().addFeature(new Feature({ geometry: p }));
+                    anzahlBilder++;
+                }
             }
 
         }
         //console.log(coords)
         let line = new LineString(coords);
-        this.map.getTrajectorySource().addFeature(new Feature({ geometry: line }))
+        this._map.getTrajectorySource().addFeature(new Feature({ geometry: line }))
         //let spline = this.createSpline(line);
         //this.map.getTrajectorySource().addFeature(new Feature({ geometry: spline }))
+
+        this._callback(this._flughoehe, turfLength(toWgs84(lineString(coords))), 0, anzahlBilder)
     }
 
     private getLongestEdge(geom: Polygon) {
@@ -214,6 +231,14 @@ export default class TrajectoryCalc {
     }
     public set uav(value: UAV) {
         this._uav = value;
+        this.recalcTrajectory();
+    }
+
+    public get hoeheBegrenzen() {
+        return this._hoeheBegrenzen;
+    }
+    public set hoeheBegrenzen(value: boolean) {
+        this._hoeheBegrenzen = value;
         this.recalcTrajectory();
     }
 }

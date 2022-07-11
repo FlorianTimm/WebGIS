@@ -8,15 +8,19 @@ export default class HTML {
         return button;
     }
 
-    static createInput(parent: HTMLElement, beschriftung: string, voreingestellt?: string): HTMLInputElement {
+    static createInput(parent: HTMLElement, beschriftung: string, voreingestellt?: string, disabled = false): HTMLInputElement {
         let input = document.createElement("input");
 
         input.setAttribute("type", "number");
-        input.value = voreingestellt.toString();
+        if (voreingestellt) {
+            input.value = voreingestellt.toString();
+        }
+        input.disabled = disabled;
 
         HTML.createLabel(beschriftung, input, parent);
 
         parent.appendChild(input);
+        parent.appendChild(document.createElement('br'))
         return input;
     }
 
@@ -39,6 +43,7 @@ export default class HTML {
 
         parent.appendChild(wert);
         parent.appendChild(input);
+        parent.appendChild(document.createElement('br'))
         return input;
     }
 
@@ -66,6 +71,17 @@ export default class HTML {
         let select: HTMLSelectElementArray<T> = new HTMLSelectElementArray<T>(liste, parent);
         HTML.createLabel(beschriftung, select.getHTMLElement(), parent);
         return select;
+    }
+    static createCheckbox(parent: HTMLElement, beschriftung: string, checked = false) {
+        let input = document.createElement("input");
+
+        input.setAttribute("type", "checkbox");
+        input.checked = checked;
+
+        HTML.createLabel(beschriftung, input, parent);
+
+        parent.appendChild(input);
+        return input;
     }
 }
 
