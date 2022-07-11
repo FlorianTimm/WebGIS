@@ -1,4 +1,3 @@
-import { none } from "ol/centerconstraint";
 import Menu from "./Menu";
 
 export class Navigation {

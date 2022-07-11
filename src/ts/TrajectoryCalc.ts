@@ -1,7 +1,7 @@
 import { Feature } from "ol";
 import { LineString, Point, Polygon } from "ol/geom";
 import Map from "./Map";
-import { polygon, lineString, bezierSpline, lineIntersect, toWgs84, pointToLineDistance, point as turfPoint, feature, buffer, difference, length as turfLength, along, toMercator } from "@turf/turf";
+import { polygon, lineString, bezierSpline, lineIntersect, toWgs84, buffer, length as turfLength, along, toMercator } from "@turf/turf";
 import UAV from "./UAV";
 
 export default class TrajectoryCalc {
@@ -39,9 +39,6 @@ export default class TrajectoryCalc {
         this._distanceLaengs = bildGroesseBoden[0] * (1 - this._ueberlappungLaengs)
         this._distanceQuer = bildGroesseBoden[1] * (1 - this._ueberlappungQuer)
 
-        console.log("Bodenauflösung", this._aufloesung);
-        console.log("pixelGroesse", pixelGroesse);
-        console.log("bildGroesse", bildGroesseBoden);
         return true;
     }
 
@@ -81,8 +78,6 @@ export default class TrajectoryCalc {
 
             let cut = lineIntersect(lineString([c1, c2]), poly).features
 
-            //console.log(cut)
-
             cut.sort((a, b) => {
                 for (let x = 0; x < Math.min(a.geometry.coordinates.length, b.geometry.coordinates.length); x++) {
                     let diff = a.geometry.coordinates[x] - b.geometry.coordinates[x];
@@ -117,7 +112,7 @@ export default class TrajectoryCalc {
             }
 
         }
-        //console.log(coords)
+
         let line = new LineString(coords);
         this._map.getTrajectorySource().addFeature(new Feature({ geometry: line }))
         //let spline = this.createSpline(line);
@@ -126,59 +121,14 @@ export default class TrajectoryCalc {
         this._callback(this._flughoehe, turfLength(toWgs84(lineString(coords))), 0, anzahlBilder)
     }
 
-    private getLongestEdge(geom: Polygon) {
-        let coord = geom.getCoordinates()[0];
-        let longestEdgeLen = 0;
-        let longestEdge: LineString;
-        coord.forEach((coord1) => {
-            coord.forEach((coord2) => {
-                if (coord1 == coord2) return;
-                let ls = new LineString([coord1, coord2]);
-                let len = ls.getLength()
-                if (longestEdgeLen < len) {
-                    longestEdgeLen = len;
-                    longestEdge = ls;
-                }
-            })
-        })
-        //console.log(longestEdgeLen);
-        return longestEdge;
-    }
     /*
-       private getNormalVector(geom: LineString) {
-           let a = geom.getFirstCoordinate();
-           let b = geom.getLastCoordinate();
-   
-           let dx = a[0] - b[0];
-           let dy = a[1] - b[1];
-   
-           let len = Math.sqrt(dx * dx + dy * dy);
-   
-           return [dy / len, -dx / len];
+       private createSpline(geom: LineString) {
+           let ls = lineString(geom.getCoordinates());
+           let bs = bezierSpline(ls, { sharpness: 0.5 });
+           return new LineString(bs.geometry.coordinates);
        }
-      
-           private createParallelLine(geom: LineString, distance: number, samedirection = true) {
-               let newgeom = [];
-               let normal = this.getNormalVector(geom);
-               geom.getCoordinates().forEach((point) => {
-                   let x = point[0] + normal[0] * distance;
-                   let y = point[1] + normal[1] * distance;
-                   newgeom.push([x, y]);
-               })
-               if (!samedirection) newgeom.reverse();
-               //console.log(newgeom);
-               return new LineString(newgeom);
-           }
-       
-           private createSpline(geom: LineString) {
-               let ls = lineString(geom.getCoordinates());
-               let bs = bezierSpline(ls, { sharpness: 0.5 });
-               return new LineString(bs.geometry.coordinates);
-           }
-       
-           */
-
-
+   
+    */
 
     ////////////////////////////////////
     ///// Getter/Setter

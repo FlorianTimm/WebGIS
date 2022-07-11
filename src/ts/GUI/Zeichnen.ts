@@ -1,14 +1,10 @@
 import { Feature } from "ol";
-import { none } from "ol/centerconstraint";
 import { Polygon } from "ol/geom";
 import { Draw } from "ol/interaction";
 import { DrawEvent } from "ol/interaction/Draw";
-import { textHeights } from "ol/render/canvas";
-import { Config } from "ol/source/TileJSON";
 import Map from "../Map";
 import TrajectoryCalc from "../TrajectoryCalc";
 import UAV from "../UAV";
-import Hauptmenu from "./Hauptmenu";
 import HTML, { HTMLSelectElementArray } from "./HTML";
 
 export default class Zeichnen extends Draw {

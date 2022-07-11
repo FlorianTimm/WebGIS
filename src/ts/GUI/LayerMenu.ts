@@ -1,6 +1,5 @@
 import { Map } from "ol";
 import { Color } from "ol/color";
-import BaseEvent from "ol/events/Event";
 import BaseLayer from "ol/layer/Base";
 import { ObjectEvent } from "ol/Object";
 import Menu from "./Menu";
