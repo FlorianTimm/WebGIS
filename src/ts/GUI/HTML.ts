@@ -110,4 +110,14 @@ export class HTMLSelectElementArray<T> {
         let array = await this.array;
         return array[this.htmlElement.selectedIndex]
     }
+
+    async setSelection(vergleich: (element: T) => boolean) {
+        let array = await this.array;
+        array.forEach((element, index) => {
+            if (vergleich(element)) {
+                this.getHTMLElement().selectedIndex = index;
+                return;
+            }
+        });
+    }
 }

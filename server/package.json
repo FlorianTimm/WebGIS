@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "nodemon server.ts"
+    "serve": "nodemon server.js"
   },
   "author": "",
   "license": "MIT",

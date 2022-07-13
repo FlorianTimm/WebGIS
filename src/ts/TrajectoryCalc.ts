@@ -7,11 +7,11 @@ import * as math from 'mathjs';
 
 export default class TrajectoryCalc {
     private _map: Map;
-    private _gebiet: Feature<Polygon>;
+    private _gebiet: Polygon;
     private _ausrichtung: number = 0;
-    private _ueberlappungQuer: number = 50;
-    private _ueberlappungLaengs: number = 50;
-    private _aufloesung: number = 5;
+    private _ueberlappungQuer: number = 0.50;
+    private _ueberlappungLaengs: number = 0.50;
+    private _aufloesung: number = 0.1;
     private _distanceQuer: number;
     private _distanceLaengs: number;
     private _uav: UAV;
@@ -43,16 +43,15 @@ export default class TrajectoryCalc {
         return true;
     }
 
-    recalcTrajectory() {
+    private recalcTrajectory() {
         if (!this.gebiet) return;
-        let geom = <Polygon>this.gebiet.getGeometry().simplify(5);
+        let geom = <Polygon>this.gebiet.simplify(5);
         let anzahlBilder = 0;
         if (!this.calculateDistance()) return;
         this._map.getTrajectorySource().clear();
         let poly4326 = <Polygon>geom.clone().transform('EPSG:3857', 'EPSG:4326');
         let buff = new Polygon(buffer(polygon(poly4326.getCoordinates()), Math.max(this._distanceQuer, this._distanceLaengs) / 1000, { units: 'kilometers', steps: 1 }).geometry.coordinates);
         buff.transform('EPSG:4326', 'EPSG:3857');
-        console.log(buff)
         //this.map.getTrajectorySource().addFeature(new Feature<LineString>({ geometry: new LineString(buff.getLinearRing(0).getCoordinates()) }))
         let poly = polygon(buff.getCoordinates())
 
@@ -105,9 +104,9 @@ export default class TrajectoryCalc {
                 let line = toWgs84(lineString([cutArray[j], cutArray[j + 1]]));
                 let l = turfLength(line);
                 let versatz = (l % (this._distanceLaengs / 1000)) / 2;
-
                 for (; versatz < l; versatz += this._distanceLaengs / 1000) {
-                    let c = toMercator(along(line, versatz).geometry.coordinates);
+                    let p = along(line, versatz)
+                    let c = toMercator(p.geometry.coordinates);
                     imgCoords.push(c);
                     this._map.getTrajectorySource().addFeature(new Feature({ geometry: new Point(c) }));
                     anzahlBilder++;
@@ -152,7 +151,6 @@ export default class TrajectoryCalc {
 
         }
         spline.push(coords[coords.length - 1])
-        console.log(spline)
         return new LineString(spline);
     }
 
@@ -160,12 +158,15 @@ export default class TrajectoryCalc {
     ////////////////////////////////////
     ///// Getter/Setter
 
-    public get gebiet(): Feature<Polygon> {
+    public get gebiet(): Polygon {
         return this._gebiet;
     }
-    public set gebiet(value: Feature<Polygon>) {
+    public set gebiet(value: Polygon) {
+        console.log(value)
         if (this._gebiet == value) return;
-        this._gebiet = value;
+        this._gebiet = value.clone();
+        this.recalcTrajectory();
+        console.log("Neue Geometrie")
     }
     public get ausrichtung(): number {
         return this._ausrichtung;

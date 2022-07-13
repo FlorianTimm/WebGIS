@@ -1,0 +1,21 @@
+### UAVs abfragen
+GET http://localhost:3000/uav
+
+
+### Projektdaten aufrufen
+GET http://localhost:3000/projekt/test
+
+### Projekt speichern
+POST http://localhost:3000/projekt
+Content-Type: application/json; charset=utf-8
+Accept: application/json
+
+{
+  "projekt": "test",
+  "gebiet": "POLYGON(())",
+  "uav": 1,
+  "aufloesung": 0.5,
+  "ueberlappunglaengs": 0.75,
+  "ueberlappungquer": 0.75,
+  "ausrichtung": 50
+}
