@@ -10,11 +10,7 @@ export default class HTML {
 
     static createInput(parent: HTMLElement, beschriftung: string, voreingestellt?: string, disabled = false): HTMLInputElement {
         let input = document.createElement("input");
-
-        input.setAttribute("type", "number");
-        if (voreingestellt) {
-            input.value = voreingestellt.toString();
-        }
+        input.value = voreingestellt ?? '';
         input.disabled = disabled;
 
         HTML.createLabel(beschriftung, input, parent);
@@ -57,17 +53,17 @@ export default class HTML {
         parent.appendChild(label);
     }
 
-    static createIntInput(parent: HTMLElement, beschriftung: string, voreingestellt?: number): HTMLInputElement {
+    static createNumberInput(parent: HTMLElement, beschriftung: string, voreingestellt?: number, disabled = false): HTMLInputElement {
         let voreingestelltString: string;
         if (voreingestellt) {
             voreingestelltString = voreingestellt.toString();
         }
-        let intInput = HTML.createInput(parent, beschriftung, voreingestelltString);
+        let intInput = HTML.createInput(parent, beschriftung, voreingestelltString, disabled);
         intInput.setAttribute("type", "number");
         return intInput;
     }
 
-    static createSelect<T>(parent: HTMLElement, beschriftung: string, liste: T[]): HTMLSelectElementArray<T> {
+    static createSelect<T>(parent: HTMLElement, beschriftung: string, liste: Promise<T[]>): HTMLSelectElementArray<T> {
         let select: HTMLSelectElementArray<T> = new HTMLSelectElementArray<T>(liste, parent);
         HTML.createLabel(beschriftung, select.getHTMLElement(), parent);
         return select;
@@ -87,17 +83,19 @@ export default class HTML {
 
 export class HTMLSelectElementArray<T> {
     private htmlElement: HTMLSelectElement;
-    private array: T[];
-    constructor(liste?: T[], parent?: HTMLElement) {
-        this.array = liste;
+    private array: Promise<T[]>;
+    constructor(listePromise?: Promise<T[]>, parent?: HTMLElement) {
         this.htmlElement = document.createElement("select");
-        if (liste) {
+        this.array = listePromise;
+        this.array.then((liste) => {
             liste.forEach((eintrag) => {
                 let option = document.createElement('option');
                 option.innerHTML = eintrag.toString();
                 this.htmlElement.appendChild(option);
             });
-        }
+            this.getHTMLElement().dispatchEvent(new Event('change'));
+        })
+
 
         if (parent) {
             parent.appendChild(this.htmlElement);
@@ -108,7 +106,8 @@ export class HTMLSelectElementArray<T> {
         return this.htmlElement;
     }
 
-    getSelectedEntry(): T {
-        return this.array[this.htmlElement.selectedIndex]
+    async getSelectedEntry(): Promise<T> {
+        let array = await this.array;
+        return array[this.htmlElement.selectedIndex]
     }
 }

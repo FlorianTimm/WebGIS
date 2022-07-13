@@ -119,7 +119,6 @@ export default class Map extends OpenLayersMap {
     setDoubleClickZoom(b: boolean) {
         this.getInteractions().forEach((interaction) => {
             if (interaction instanceof DoubleClickZoom) {
-                console.log("Gefunden")
                 interaction.setActive(b);
             }
         });

@@ -39,10 +39,10 @@ export default class Zeichnen extends Draw {
         this._hoeheBegrenzen = HTML.createCheckbox(menuBereich, "100m-Begrenzung")
 
 
-        this._flugHoeheInput = HTML.createInput(menuBereich, "Flughöhe", '-', true);
-        this._flugLaengeInput = HTML.createInput(menuBereich, "Fluglänge", '-', true);
-        this._flugDauerInput = HTML.createInput(menuBereich, "Flugdauer", '-', true);
-        this._bildAnzahlInput = HTML.createInput(menuBereich, "Bilder", '-', true);
+        this._flugHoeheInput = HTML.createNumberInput(menuBereich, "Flughöhe", undefined, true);
+        this._flugLaengeInput = HTML.createNumberInput(menuBereich, "Fluglänge", undefined, true);
+        this._flugDauerInput = HTML.createInput(menuBereich, "Flugdauer", undefined, true);
+        this._bildAnzahlInput = HTML.createNumberInput(menuBereich, "Bilder", undefined, true);
 
 
         this.on("drawend", (event: DrawEvent) => { this.zeichnen_fertig(event) })
@@ -98,8 +98,8 @@ export default class Zeichnen extends Draw {
         this._tc.hoeheBegrenzen = this._hoeheBegrenzen.checked;
     }
 
-    private uavUebergeben() {
-        this._tc.uav = this._uavSelect.getSelectedEntry();
+    private async uavUebergeben() {
+        this._tc.uav = await this._uavSelect.getSelectedEntry();
     }
 
     private ueberlappungLaengsUebergeben() {

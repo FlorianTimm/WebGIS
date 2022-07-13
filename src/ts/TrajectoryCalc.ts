@@ -1,7 +1,7 @@
 import { Feature } from "ol";
 import { LineString, Point, Polygon } from "ol/geom";
 import Map from "./Map";
-import { polygon, lineString, bezierSpline, lineIntersect, toWgs84, buffer, length as turfLength, along, toMercator } from "@turf/turf";
+import { polygon, lineString, lineIntersect, toWgs84, buffer, length as turfLength, along, toMercator } from "@turf/turf";
 import UAV from "./UAV";
 import * as math from 'mathjs';
 
@@ -23,7 +23,6 @@ export default class TrajectoryCalc {
     constructor(map: Map, callback: (hoehe: number, laenge: number, dauer: number, anzahl: number) => void) {
         this._map = map;
         this._callback = callback;
-        console.log(math)
     }
 
     private calculateDistance(): boolean {
@@ -45,7 +44,7 @@ export default class TrajectoryCalc {
     }
 
     recalcTrajectory() {
-
+        if (!this.gebiet) return;
         let geom = <Polygon>this.gebiet.getGeometry().simplify(5);
         let anzahlBilder = 0;
         if (!this.calculateDistance()) return;
@@ -135,7 +134,6 @@ export default class TrajectoryCalc {
         */
         let spline: [number, number][] = [coords[0]]
         let s = 0.8
-        console.log(math)
         let m = math.matrix([
             [0, 1, 0, 0],
             [-s, 0, s, 0],
@@ -149,7 +147,6 @@ export default class TrajectoryCalc {
             for (let t = 0; t < 1; t += 0.1) {
                 let x = <number><unknown>math.multiply([1, t, t ** 2, t ** 3], mX)
                 let y = <number><unknown>math.multiply([1, t, t ** 2, t ** 3], mY)
-                console.log(x)
                 spline.push([x, y])
             }
 

@@ -8,6 +8,7 @@ import { Color } from "ol/color";
 export default class Hauptmenu extends Menu {
     private _map: Map;
     private _source: VectorSource
+    private _zeichnen: Zeichnen;
     constructor(map: Map, div?: HTMLElement,) {
         super(div);
         this._map = map;
@@ -17,7 +18,7 @@ export default class Hauptmenu extends Menu {
         this._map.addLayer(layer)
 
 
-        new Zeichnen(this._map, this.getDiv());
+        this._zeichnen = new Zeichnen(this._map, this.getDiv());
     }
 
     public getName(): string {

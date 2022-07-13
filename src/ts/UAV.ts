@@ -1,3 +1,6 @@
+import { string } from "mathjs";
+import { textHeights } from "ol/render/canvas";
+
 export default class UAV {
     private _name: string;
     private _focusLength: number;
@@ -8,34 +11,51 @@ export default class UAV {
     private _curveRadius: number;
 
     private static uavs: UAV[];
+    private static uavsPromise: Promise<UAV[]>;
+    private _id: number;
 
     constructor(name: string) {
         this._name = name;
     }
 
-    static getUAVs(): UAV[] {
-        if (UAV.uavs == undefined) {
-            UAV.loadUAVs();
+    static async getUAVs(): Promise<UAV[]> {
+        if (UAV.uavsPromise === undefined) {
+            this.uavsPromise = UAV.loadUAVs();
         };
-        return this.uavs;
+        return this.uavsPromise
     }
 
-    private static saveUAVs() {
+    private static newUAV() {
+
     }
 
-    private static loadUAVs() {
-        this.uavs = [];
-
-
-        const testUAV = new UAV('DJI Mini 3 Pro')
-        testUAV.curveRadius = 50;
-        testUAV.maxspeed = 16;
-        testUAV.curveRadius = 1;
-        testUAV.minspeed = 0;
-        testUAV.sensorPixel = [8064, 6048];
-        testUAV.sensorSize = [0.007153, 0.009846]
-        testUAV.focusLength = 0.00665
-        this.uavs.push(testUAV)
+    private static async loadUAVs(): Promise<UAV[]> {
+        const req = await fetch('/api/uav');
+        const json = await req.json();
+        let uavs = [];
+        json.forEach((element: {
+            id: number;
+            name: string;
+            curveradius: number;
+            minspeed: number;
+            maxspeed: number;
+            sensorwidth: number;
+            sensorheight: number;
+            focuslength: number;
+            sensorpixelwidth: number;
+            sensorpixelheight: number;
+        }) => {
+            const testUAV = new UAV(element.name);
+            testUAV.id = element.id;
+            testUAV.curveRadius = element.curveradius ?? 0;
+            testUAV.maxspeed = element.maxspeed ?? 0;
+            testUAV.minspeed = element.minspeed ?? 50;
+            testUAV.sensorPixel = [element.sensorpixelwidth, element.sensorpixelheight];
+            testUAV.sensorSize = [element.sensorwidth, element.sensorheight];
+            testUAV.focusLength = element.focuslength ?? 5;
+            uavs.push(testUAV);
+        });
+        return uavs;
     }
 
     public toString() {
@@ -79,5 +99,15 @@ export default class UAV {
     }
     public set curveRadius(value: number) {
         this._curveRadius = value;
+    }
+    public get id(): number {
+        return this._id;
+    }
+    public set id(value: number) {
+        this._id = value;
+    }
+
+    public get name(): string {
+        return this._name;
     }
 }
