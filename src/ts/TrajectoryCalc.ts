@@ -3,6 +3,7 @@ import { LineString, Point, Polygon } from "ol/geom";
 import Map from "./Map";
 import { polygon, lineString, bezierSpline, lineIntersect, toWgs84, buffer, length as turfLength, along, toMercator } from "@turf/turf";
 import UAV from "./UAV";
+import * as math from 'mathjs';
 
 export default class TrajectoryCalc {
     private _map: Map;
@@ -22,6 +23,7 @@ export default class TrajectoryCalc {
     constructor(map: Map, callback: (hoehe: number, laenge: number, dauer: number, anzahl: number) => void) {
         this._map = map;
         this._callback = callback;
+        console.log(math)
     }
 
     private calculateDistance(): boolean {
@@ -70,7 +72,7 @@ export default class TrajectoryCalc {
         let xLinienDiff = this._distanceQuer * Math.sin((this.ausrichtung + 90) / 180 * Math.PI)
         let yLinienDiff = this._distanceQuer * Math.cos((this.ausrichtung + 90) / 180 * Math.PI)
 
-        let lineCoords = []
+        //let lineCoords = []
         let imgCoords = []
 
         for (let i = Math.floor(-maxStrecke / this._distanceQuer); i < Math.ceil(maxStrecke / this._distanceQuer) + 1; i++) {
@@ -96,7 +98,7 @@ export default class TrajectoryCalc {
             let cutArray = []
             cut.forEach((f) => {
                 let c = f.geometry.coordinates
-                lineCoords.push(c);
+                //lineCoords.push(c);
                 cutArray.push(c);
             })
 
@@ -115,19 +117,46 @@ export default class TrajectoryCalc {
 
         }
 
-        let line = new LineString(lineCoords);
-        this._map.getTrajectorySource().addFeature(new Feature({ geometry: line }))
-        //let spline = this.createSpline(imgCoords);
-        //this._map.getTrajectorySource().addFeature(new Feature({ geometry: spline }))
+        //let line = new LineString(lineCoords);
+        //this._map.getTrajectorySource().addFeature(new Feature({ geometry: line }))
+        let spline = this.createSpline(imgCoords);
+        this._map.getTrajectorySource().addFeature(new Feature({ geometry: spline }))
 
-        this._callback(this._flughoehe, turfLength(toWgs84(lineString(lineCoords))), 0, anzahlBilder)
+        this._callback(this._flughoehe, turfLength(toWgs84(lineString(spline.getCoordinates()))), 0, anzahlBilder)
     }
 
 
-    private createSpline(coords: [number, number][]) {
-        let ls = toWgs84(lineString(coords));
-        let bs = bezierSpline(ls, { sharpness: 0.5 });
+    private createSpline(coords: [number, number][]): LineString {
+        /*let ls = toWgs84(lineString(coords));
+        let bs = bezierSpline(ls, {
+            sharpness: 0.5
+        });
         return new LineString(toMercator(bs).geometry.coordinates);
+        */
+        let spline: [number, number][] = [coords[0]]
+        let s = 0.8
+        console.log(math)
+        let m = math.matrix([
+            [0, 1, 0, 0],
+            [-s, 0, s, 0],
+            [2 * s, s - 3, 3 - 2 * s, -s],
+            [-s, 2 - s, s - 2, s]
+        ])
+
+        for (let i = 1; i < coords.length - 2; i++) {
+            let mX = math.multiply(m, [coords[i - 1][0], coords[i][0], coords[i + 1][0], coords[i + 2][0]])
+            let mY = math.multiply(m, [coords[i - 1][1], coords[i][1], coords[i + 1][1], coords[i + 2][1]])
+            for (let t = 0; t < 1; t += 0.1) {
+                let x = <number><unknown>math.multiply([1, t, t ** 2, t ** 3], mX)
+                let y = <number><unknown>math.multiply([1, t, t ** 2, t ** 3], mY)
+                console.log(x)
+                spline.push([x, y])
+            }
+
+        }
+        spline.push(coords[coords.length - 1])
+        console.log(spline)
+        return new LineString(spline);
     }
 
 
