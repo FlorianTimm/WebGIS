@@ -70,7 +70,8 @@ export default class TrajectoryCalc {
         let xLinienDiff = this._distanceQuer * Math.sin((this.ausrichtung + 90) / 180 * Math.PI)
         let yLinienDiff = this._distanceQuer * Math.cos((this.ausrichtung + 90) / 180 * Math.PI)
 
-        let coords = []
+        let lineCoords = []
+        let imgCoords = []
 
         for (let i = Math.floor(-maxStrecke / this._distanceQuer); i < Math.ceil(maxStrecke / this._distanceQuer) + 1; i++) {
             let c1 = [minx - xDiff + (i - 0.5) * xLinienDiff, miny - yDiff + (i - 0.5) * yLinienDiff]
@@ -95,7 +96,7 @@ export default class TrajectoryCalc {
             let cutArray = []
             cut.forEach((f) => {
                 let c = f.geometry.coordinates
-                coords.push(c);
+                lineCoords.push(c);
                 cutArray.push(c);
             })
 
@@ -105,30 +106,30 @@ export default class TrajectoryCalc {
                 let versatz = (l % (this._distanceLaengs / 1000)) / 2;
 
                 for (; versatz < l; versatz += this._distanceLaengs / 1000) {
-                    let p = new Point(toMercator(along(line, versatz).geometry.coordinates));
-                    this._map.getTrajectorySource().addFeature(new Feature({ geometry: p }));
+                    let c = toMercator(along(line, versatz).geometry.coordinates);
+                    imgCoords.push(c);
+                    this._map.getTrajectorySource().addFeature(new Feature({ geometry: new Point(c) }));
                     anzahlBilder++;
                 }
             }
 
         }
 
-        let line = new LineString(coords);
+        let line = new LineString(lineCoords);
         this._map.getTrajectorySource().addFeature(new Feature({ geometry: line }))
-        //let spline = this.createSpline(line);
-        //this.map.getTrajectorySource().addFeature(new Feature({ geometry: spline }))
+        //let spline = this.createSpline(imgCoords);
+        //this._map.getTrajectorySource().addFeature(new Feature({ geometry: spline }))
 
-        this._callback(this._flughoehe, turfLength(toWgs84(lineString(coords))), 0, anzahlBilder)
+        this._callback(this._flughoehe, turfLength(toWgs84(lineString(lineCoords))), 0, anzahlBilder)
     }
 
-    /*
-       private createSpline(geom: LineString) {
-           let ls = lineString(geom.getCoordinates());
-           let bs = bezierSpline(ls, { sharpness: 0.5 });
-           return new LineString(bs.geometry.coordinates);
-       }
-   
-    */
+
+    private createSpline(coords: [number, number][]) {
+        let ls = toWgs84(lineString(coords));
+        let bs = bezierSpline(ls, { sharpness: 0.5 });
+        return new LineString(toMercator(bs).geometry.coordinates);
+    }
+
 
     ////////////////////////////////////
     ///// Getter/Setter
