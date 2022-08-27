@@ -36,10 +36,11 @@ export default class TrajectoryCalc {
         const pixelGroesse = this._uav.sensorSize[0] / this._uav.sensorPixel[0];
         this._flughoehe = this._uav.focusLength / pixelGroesse * this.aufloesung;
         if (this._hoeheBegrenzen && this._flughoehe > 100) this._flughoehe = 100;
-        const bildGroesseBoden: [number, number] = [this._uav.sensorSize[0] / this._uav.focusLength * this._flughoehe, this._uav.sensorSize[1] / this._uav.focusLength * this._flughoehe]
-        this._distanceLaengs = bildGroesseBoden[0] * (1 - this._ueberlappungLaengs)
-        this._distanceQuer = bildGroesseBoden[1] * (1 - this._ueberlappungQuer)
+        const bildGroesseBoden: [number, number] = [this._uav.sensorSize[1] / this._uav.focusLength * this._flughoehe, this._uav.sensorSize[0] / this._uav.focusLength * this._flughoehe]
+        this._distanceLaengs = bildGroesseBoden[1] * (1 - this._ueberlappungLaengs)
+        this._distanceQuer = bildGroesseBoden[0] * (1 - this._ueberlappungQuer)
 
+        console.log(this._distanceQuer, this._distanceLaengs)
         return true;
     }
 
@@ -69,6 +70,7 @@ export default class TrajectoryCalc {
 
         let xLinienDiff = this._distanceQuer * Math.sin((this.ausrichtung + 90) / 180 * Math.PI)
         let yLinienDiff = this._distanceQuer * Math.cos((this.ausrichtung + 90) / 180 * Math.PI)
+        console.log(xLinienDiff, yLinienDiff, Math.sqrt(xLinienDiff ** 2 + yLinienDiff ** 2))
 
         //let lineCoords = []
         let imgCoords = []

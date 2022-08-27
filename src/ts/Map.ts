@@ -9,6 +9,7 @@ import TileWMS from 'ol/source/TileWMS';
 import VectorSource from "ol/source/Vector";
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import { ImageLayer, TileLayer } from "./openLayers/Layer";
+import { defaults as controlDefaults, ScaleLine } from "ol/control";
 
 export default class Map extends OpenLayersMap {
 
@@ -81,7 +82,10 @@ export default class Map extends OpenLayersMap {
             view: new View({
                 center: fromLonLat([10.2, 53.8]),
                 zoom: 10
-            })
+            }),
+            controls: controlDefaults().extend([
+                new ScaleLine()
+            ]),
         });
 
         this.zeichenSource = new VectorSource({});
