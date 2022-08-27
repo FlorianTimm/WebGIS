@@ -1,9 +1,10 @@
 import { Feature } from "ol";
 import { LineString, Point, Polygon } from "ol/geom";
 import Map from "./Map";
-import { polygon, lineString, lineIntersect, toWgs84, buffer, length as turfLength, along, toMercator } from "@turf/turf";
+import { polygon, lineString, lineIntersect, toWgs84, buffer, length as turfLength, along, toMercator, destination, length, distance } from "@turf/turf";
 import UAV from "./UAV";
 import * as math from 'mathjs';
+import { abs } from "mathjs";
 
 export default class TrajectoryCalc {
     private _map: Map;
@@ -52,34 +53,36 @@ export default class TrajectoryCalc {
         this._map.getTrajectorySource().clear();
         let poly4326 = <Polygon>geom.clone().transform('EPSG:3857', 'EPSG:4326');
         let buff = new Polygon(buffer(polygon(poly4326.getCoordinates()), Math.max(this._distanceQuer, this._distanceLaengs) / 1000, { units: 'kilometers', steps: 1 }).geometry.coordinates);
-        buff.transform('EPSG:4326', 'EPSG:3857');
+        //buff.transform('EPSG:4326', 'EPSG:3857');
         //this.map.getTrajectorySource().addFeature(new Feature<LineString>({ geometry: new LineString(buff.getLinearRing(0).getCoordinates()) }))
         let poly = polygon(buff.getCoordinates())
 
         //
         // [minx, miny, maxx, maxy]
         let extent = buff.getExtent()
-        let minx = extent[0]
-        let miny = extent[1]
-        let maxxDiff = extent[2] - minx
-        let maxyDiff = extent[3] - miny
-        let maxStrecke = Math.sqrt(maxxDiff * maxxDiff + maxyDiff * maxyDiff)
+        let minx = (extent[0] + extent[2]) / 2
+        let miny = (extent[1] + extent[3]) / 2
 
-        let xDiff = maxStrecke * Math.sin(this.ausrichtung / 180 * Math.PI)
-        let yDiff = maxStrecke * Math.cos(this.ausrichtung / 180 * Math.PI)
+        let maxStrecke = distance([extent[0], extent[1]], [extent[2], extent[3]]) / 2.
 
-        let xLinienDiff = this._distanceQuer * Math.sin((this.ausrichtung + 90) / 180 * Math.PI)
-        let yLinienDiff = this._distanceQuer * Math.cos((this.ausrichtung + 90) / 180 * Math.PI)
-        console.log(xLinienDiff, yLinienDiff, Math.sqrt(xLinienDiff ** 2 + yLinienDiff ** 2))
-
-        //let lineCoords = []
         let imgCoords = []
 
-        for (let i = Math.floor(-maxStrecke / this._distanceQuer); i < Math.ceil(maxStrecke / this._distanceQuer) + 1; i++) {
-            let c1 = [minx - xDiff + (i - 0.5) * xLinienDiff, miny - yDiff + (i - 0.5) * yLinienDiff]
-            let c2 = [minx + xDiff + (i - 0.5) * xLinienDiff, miny + yDiff + (i - 0.5) * yLinienDiff]
+        for (let i = Math.floor(-maxStrecke / (this._distanceQuer / 1000.)); i < Math.ceil(maxStrecke / (this._distanceQuer / 1000.)) + 1; i++) {
+            let abstand = (i - 0.5) * this._distanceQuer / 1000.
+            let winkel = abstand < 0 ? this.ausrichtung + 180 : this.ausrichtung;
+            if (winkel > 180) winkel -= 360;
+            abstand = Math.abs(abstand);
 
-            let cut = lineIntersect(lineString([c1, c2]), poly).features
+            let c0 = destination([minx, miny], abstand, winkel)
+            let c1 = destination(c0, maxStrecke, this.ausrichtung < -90 ? this.ausrichtung + 270 : this._ausrichtung - 90)
+            let c2 = destination(c0, maxStrecke, this.ausrichtung < 90 ? this.ausrichtung + 90 : this._ausrichtung - 270)
+
+
+            console.log(c1, c2)
+
+            let cut = lineIntersect(lineString([c1.geometry.coordinates, c2.geometry.coordinates]), poly).features
+
+            console.log(poly, cut)
 
             cut.sort((a, b) => {
                 for (let x = 0; x < Math.min(a.geometry.coordinates.length, b.geometry.coordinates.length); x++) {
@@ -103,7 +106,7 @@ export default class TrajectoryCalc {
             })
 
             for (let j = 0; j <= cutArray.length - 1; j += 2) {
-                let line = toWgs84(lineString([cutArray[j], cutArray[j + 1]]));
+                let line = lineString([cutArray[j], cutArray[j + 1]]);
                 let l = turfLength(line);
                 let versatz = (l % (this._distanceLaengs / 1000)) / 2;
                 for (; versatz < l; versatz += this._distanceLaengs / 1000) {
