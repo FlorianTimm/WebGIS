@@ -7,9 +7,22 @@ import { ImageWMS } from "ol/source";
 import OSM from "ol/source/OSM";
 import TileWMS from 'ol/source/TileWMS';
 import VectorSource from "ol/source/Vector";
+import VectorTileSource from "ol/source/VectorTile";
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
-import { ImageLayer, TileLayer } from "./openLayers/Layer";
+import { ImageLayer, TileLayer, VectorTileLayer } from "./openLayers/Layer";
 import { defaults as controlDefaults, ScaleLine } from "ol/control";
+import TopoJSON from 'ol/format/TopoJSON';
+import { FeatureLike } from "ol/Feature";
+import BuilderGroup from "ol/render/canvas/BuilderGroup";
+import { includes } from "ol/array";
+
+
+const roadStyleCache = {};
+const roadColor = {
+    'major_road': '#776',
+    'minor_road': '#ccb',
+    'highway': '#f39',
+};
 
 export default class Map extends OpenLayersMap {
 
@@ -68,6 +81,69 @@ export default class Map extends OpenLayersMap {
                         params: { 'LAYERS': 'Krankenhaeuser,Flugplaetze,Hubschrauberlandeplaetze' },
                         attributions: [fhh]
                     }),
+                }),
+                new VectorTileLayer({
+                    name: "Flugbeschränkungen (VectorTiles)",
+                    switchable: true,
+                    backgroundLayer: false,
+                    source: new VectorTileSource({
+                        attributions:
+                            '&copy; OpenStreetMap contributors, Who’s On First, ' +
+                            'Natural Earth, and osmdata.openstreetmap.de',
+                        format: new TopoJSON({
+                            layerName: 'layer',
+                            layers: ['roads', 'landuse'],
+                        }),
+                        maxZoom: 19,
+                        url:
+                            'https://tile.nextzen.org/tilezen/vector/v1/all/{z}/{x}/{y}.topojson?api_key=' +
+                            'peb4RRGQRSy8NfrsVb7hMg',
+                    }),
+                    style: function (feature: FeatureLike, nr: number) {
+
+                        if (feature.get('layer') != 'roads') {
+                            if (feature.get('kind') == 'industrial')
+                                return new Style({
+                                    stroke: new Stroke({
+                                        color: '#f00',
+                                        width: 3
+                                    })
+                                })
+                            return null;
+                        } else if (feature.get('kind') == 'construction') {
+                            return null;
+                        } else if ((<string>feature.get('ref') ?? '').startsWith('B')) {
+                            console.log(feature.getProperties())
+                            return [new Style({
+                                stroke: new Stroke({
+                                    color: 'rgba(0,0,255,0.5)',
+                                    width: 215 / nr,
+                                })
+                            }),
+                            new Style({
+                                stroke: new Stroke({
+                                    color: 'blue',
+                                    width: 15 / nr,
+                                })
+                            })]
+                        } else if ((<string>feature.get('ref') ?? '').startsWith('A')) {
+                            return [new Style({
+                                stroke: new Stroke({
+                                    color: 'rgba(0,0,255,0.5)',
+                                    width: 235 / nr,
+                                })
+                            }),
+                            new Style({
+                                stroke: new Stroke({
+                                    color: 'blue',
+                                    width: 35 / nr,
+                                })
+                            })]
+                        } else {
+                            return null;
+                        }
+
+                    },
                 }),
                 new ImageLayer<ImageWMS>({
                     name: "Gebietsgrenzen",
