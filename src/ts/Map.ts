@@ -3,7 +3,7 @@ import { LineString, Point, Polygon } from "ol/geom";
 import { DoubleClickZoom } from "ol/interaction";
 import VectorLayer from "ol/layer/Vector";
 import { fromLonLat } from "ol/proj";
-import { ImageWMS } from "ol/source";
+import { GeoTIFF, ImageWMS } from "ol/source";
 import OSM from "ol/source/OSM";
 import TileWMS from 'ol/source/TileWMS';
 import VectorSource from "ol/source/Vector";
@@ -13,16 +13,7 @@ import { ImageLayer, TileLayer, VectorTileLayer } from "./openLayers/Layer";
 import { defaults as controlDefaults, ScaleLine } from "ol/control";
 import TopoJSON from 'ol/format/TopoJSON';
 import { FeatureLike } from "ol/Feature";
-import BuilderGroup from "ol/render/canvas/BuilderGroup";
-import { includes } from "ol/array";
-
-
-const roadStyleCache = {};
-const roadColor = {
-    'major_road': '#776',
-    'minor_road': '#ccb',
-    'highway': '#f39',
-};
+import MVT from 'ol/format/MVT';
 
 export default class Map extends OpenLayersMap {
 
@@ -50,7 +41,22 @@ export default class Map extends OpenLayersMap {
                             'FORMAT': 'image/png',
                             'TRANSPARENT': 'false'
                         },
-                        attributions: [fhh]
+                        attributions: [lgv]
+                    })
+                }),
+                new TileLayer({
+                    name: 'LGV DOP',
+                    backgroundLayer: true,
+                    switchable: true,
+                    visible: false,
+                    source: new TileWMS({
+                        url: 'https://geodienste.hamburg.de/HH_WMS_DOP?',
+                        params: {
+                            'LAYERS': 'DOP',
+                            'FORMAT': 'image/jpeg',
+                            'TRANSPARENT': 'false'
+                        },
+                        attributions: [lgv]
                     })
                 }),
                 new TileLayer({
@@ -69,7 +75,8 @@ export default class Map extends OpenLayersMap {
                         url: 'https://sgx.geodatenzentrum.de/wms_basemapde?',
                         params: {
                             'LAYERS': 'de_basemapde_web_raster_grau'
-                        }
+                        },
+                        attributions: [bkg]
                     })
                 }),
 
@@ -86,62 +93,83 @@ export default class Map extends OpenLayersMap {
                     name: "Flugbeschränkungen (VectorTiles)",
                     switchable: true,
                     backgroundLayer: false,
+                    visible: false,
+                    opacity: 0.5,
                     source: new VectorTileSource({
                         attributions:
-                            '&copy; OpenStreetMap contributors, Who’s On First, ' +
-                            'Natural Earth, and osmdata.openstreetmap.de',
-                        format: new TopoJSON({
-                            layerName: 'layer',
-                            layers: ['roads', 'landuse'],
+                            '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+                        format: new MVT({
+                            layers: ['landuse', 'transportation', 'transportation_name']
                         }),
-                        maxZoom: 19,
+                        maxZoom: 14,
                         url:
-                            'https://tile.nextzen.org/tilezen/vector/v1/all/{z}/{x}/{y}.topojson?api_key=' +
-                            'peb4RRGQRSy8NfrsVb7hMg',
+                            'https://api.maptiler.com/tiles/v3-openmaptiles/{z}/{x}/{y}.pbf?key=hcVtfWQB7sUmTPO7pbWz',
                     }),
-                    style: function (feature: FeatureLike, nr: number) {
-
-                        if (feature.get('layer') != 'roads') {
-                            if (feature.get('kind') == 'industrial')
+                    style: (feature: FeatureLike, nr: number) => {
+                        console.log(feature)
+                        if (feature.get('kind') == 'construction') {
+                            return null;
+                        } else if (feature.get('layer') == 'landuse') {
+                            if (feature.get('class') == 'industrial')
                                 return new Style({
+                                    fill: new Fill({
+                                        color: '#00f',
+                                    }),
+                                    zIndex: 2
+                                })
+                        } else if (feature.get('layer') == 'transportation_name') {
+                            if ((<string>feature.get('ref') ?? '').startsWith('B')) {
+                                //console.log(feature.getProperties())
+                                return [new Style({
                                     stroke: new Stroke({
-                                        color: '#f00',
-                                        width: 3
-                                    })
-                                })
-                            return null;
-                        } else if (feature.get('kind') == 'construction') {
-                            return null;
-                        } else if ((<string>feature.get('ref') ?? '').startsWith('B')) {
-                            console.log(feature.getProperties())
+                                        color: 'orange',
+                                        width: 215 / nr,
+                                    }),
+                                    zIndex: 1
+                                }),
+                                new Style({
+                                    stroke: new Stroke({
+                                        color: 'red',
+                                        width: 35 / nr,
+                                    }),
+                                    zIndex: 3
+                                })]
+                            } else if ((<string>feature.get('ref') ?? '').startsWith('A')) {
+                                return [new Style({
+                                    stroke: new Stroke({
+                                        color: 'orange',
+                                        width: 235 / nr,
+
+                                    }),
+                                    zIndex: 1
+                                }),
+                                new Style({
+                                    stroke: new Stroke({
+                                        color: 'red',
+                                        width: 55 / nr,
+                                    }),
+                                    zIndex: 3
+                                })]
+                            }
+
+                        } else if (feature.get('layer') == 'transportation' && feature.get('class') == 'rail') {
                             return [new Style({
                                 stroke: new Stroke({
-                                    color: 'rgba(0,0,255,0.5)',
-                                    width: 215 / nr,
-                                })
+                                    color: 'orange',
+                                    width: 205 / nr,
+                                }),
+                                zIndex: 1
                             }),
                             new Style({
                                 stroke: new Stroke({
-                                    color: 'blue',
-                                    width: 15 / nr,
-                                })
+                                    color: 'red',
+                                    width: 25 / nr,
+                                }),
+                                zIndex: 3
                             })]
-                        } else if ((<string>feature.get('ref') ?? '').startsWith('A')) {
-                            return [new Style({
-                                stroke: new Stroke({
-                                    color: 'rgba(0,0,255,0.5)',
-                                    width: 235 / nr,
-                                })
-                            }),
-                            new Style({
-                                stroke: new Stroke({
-                                    color: 'blue',
-                                    width: 35 / nr,
-                                })
-                            })]
-                        } else {
-                            return null;
                         }
+                        return null;
+
 
                     },
                 }),
@@ -186,6 +214,7 @@ export default class Map extends OpenLayersMap {
             })
         })
         this.addLayer(trajectoryLayer);
+        this.createDropSupport();
     }
 
     getZeichenSource() {
@@ -201,6 +230,48 @@ export default class Map extends OpenLayersMap {
             if (interaction instanceof DoubleClickZoom) {
                 interaction.setActive(b);
             }
+        });
+    }
+
+
+    createDropSupport() {
+        let dropArea = this.getTargetElement();
+
+
+        (['dragenter', 'dragover', 'dragleave', 'drop']).forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false)
+        })
+
+        function preventDefaults(e) {
+            e.preventDefault()
+            e.stopPropagation()
+        }
+
+        dropArea.addEventListener('drop', (e: DragEvent) => {
+            let dt = e.dataTransfer
+            let files = <any>dt.files;
+
+            ([...files]).forEach((file) => {
+                console.log(file);
+                let reader = new FileReader()
+                reader.readAsDataURL(file)
+                reader.onloadend = () => {
+                    //let img = document.createElement('img')
+                    var blob = new Blob([reader.result]);
+                    let dataurl = URL.createObjectURL(blob);
+                    console.log(blob.arrayBuffer())
+                    let geotiff = new GeoTIFF({
+                        sources: [{
+                            blob: blob
+                        }],
+                    })
+                    let layer = new TileLayer({
+                        source: geotiff,
+                    });
+                    this.addLayer(layer)
+
+                }
+            });
         });
     }
 }

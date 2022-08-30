@@ -68,6 +68,9 @@ module.exports = {
         target: 'http://localhost:3000',
         pathRewrite: { '^/api': '' },
       }
-    }
+    },
+    static: {
+      directory: path.join(__dirname, "app"),
+    },
   }
 }

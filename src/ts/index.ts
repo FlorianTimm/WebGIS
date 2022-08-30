@@ -26,4 +26,3 @@ function createMenu() {
     let um = new KameraMenu();
     navigation.appendMenu(um);
 }
-
