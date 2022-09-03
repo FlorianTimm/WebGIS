@@ -9,6 +9,7 @@ import HTML, { HTMLSelectElementArray } from "./HTML";
 import WKT from "ol/format/WKT"
 import { map } from "mathjs";
 import { ModifyEvent } from "ol/interaction/Modify";
+import { GPX } from "ol/format";
 
 export default class Zeichnen extends Draw {
     private _button: HTMLButtonElement;
@@ -196,5 +197,21 @@ export default class Zeichnen extends Draw {
         this._ueberlappungLaengsSlider.dispatchEvent(new Event('change'))
         this._ueberlappungQuerSlider.value = (option.ueberlappungquer * 100).toString();
         this._ueberlappungQuerSlider.dispatchEvent(new Event('change'))
+    }
+
+    public exportTrajectory() {
+        console.log("Export")
+        let trajectory = this._map.getTrajectorySource().getFeatures()
+        let point = trajectory.filter((geom) => {
+            if (geom.getGeometry().getType() == 'Point') return geom
+            else return null;
+        });
+        let gpx = new GPX();
+        let gpxTxt = gpx.writeFeatures(point);
+        let link = document.createElement('a');
+        link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(gpxTxt);
+        link.download = 'test.gpx';
+        link.click()
+
     }
 }

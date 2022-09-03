@@ -32,6 +32,12 @@ export default class Hauptmenu extends Menu {
             })
         }
 
+        let exportData = document.createElement('button');
+        this.getDiv().appendChild(exportData)
+        exportData.addEventListener('click', () => this._zeichnen.exportTrajectory())
+        exportData.innerHTML = "GPX"
+
+
         let linkButton = HTML.createButton(this.getDiv(), linkButtonText)
         linkButton.addEventListener("click", async () => {
             const requestOptions = {
