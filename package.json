@@ -21,7 +21,7 @@
   "dependencies": {
     "@types/mathjs": "^9.4.2",
     "mathjs": "^11.1.0",
-    "ol": "^7.0.0",
+    "ol": "^7.1.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
