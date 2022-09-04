@@ -1,5 +1,5 @@
 import { Feature } from "ol";
-import { Polygon } from "ol/geom";
+import { Point, Polygon } from "ol/geom";
 import { Draw, Modify } from "ol/interaction";
 import { DrawEvent } from "ol/interaction/Draw";
 import Map from "../Map";
@@ -11,6 +11,7 @@ import { map } from "mathjs";
 import { ModifyEvent } from "ol/interaction/Modify";
 import { GPX, KML } from "ol/format";
 import XMLFeature from "ol/format/XMLFeature";
+import { transform } from "ol/proj";
 
 type Config = {
     uav: number,
@@ -222,7 +223,13 @@ export default class Zeichnen extends Draw {
             xmlData = new KML();
             link.download = 'datei.kml';
         }
-        let xmlDataTxt = xmlData.writeFeatures(point);
+        let geom4326: Feature<Point>[] = [];
+        point.forEach((feature: Feature) => {
+            let f = <Feature<Point>>feature.clone()
+            f.getGeometry()?.transform('EPSG:3857', 'EPSG:4326')
+            geom4326.push(f);
+        })
+        let xmlDataTxt = xmlData.writeFeatures(geom4326);
         link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(xmlDataTxt);
         link.click()
     }
