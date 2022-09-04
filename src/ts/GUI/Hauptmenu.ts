@@ -32,10 +32,15 @@ export default class Hauptmenu extends Menu {
             })
         }
 
-        let exportData = document.createElement('button');
-        this.getDiv().appendChild(exportData)
-        exportData.addEventListener('click', () => this._zeichnen.exportTrajectory())
-        exportData.innerHTML = "GPX"
+        let exportDataKML = document.createElement('button');
+        this.getDiv().appendChild(exportDataKML)
+        exportDataKML.addEventListener('click', () => this._zeichnen.exportTrajectory('KML'))
+        exportDataKML.innerHTML = "KML"
+
+        let exportDataGPX = document.createElement('button');
+        this.getDiv().appendChild(exportDataGPX)
+        exportDataGPX.addEventListener('click', () => this._zeichnen.exportTrajectory('GPX'))
+        exportDataGPX.innerHTML = "GPX"
 
 
         let linkButton = HTML.createButton(this.getDiv(), linkButtonText)
@@ -81,12 +86,12 @@ export default class Hauptmenu extends Menu {
         return [200, 200, 0]
     }
 
-    private findGetParameter(parameterName: string) {
+    private findGetParameter(parameterName: string): string | null {
         // Source: https://stackoverflow.com/questions/5448545/how-to-retrieve-get-parameters-from-javascript
-        let result = null,
-            tmp = [];
+        let result: string | null = null,
+            tmp: string[] = [];
         location.search
-            .substr(1)
+            .substring(1)
             .split("&")
             .forEach(function (item) {
                 tmp = item.split("=");

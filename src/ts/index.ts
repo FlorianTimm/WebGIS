@@ -1,4 +1,4 @@
-import "./import_jquery.js";
+import "../js/import_jquery.js";
 import '../../node_modules/ol/ol.css'
 import '../style/index.css';
 import Map from "./Map";

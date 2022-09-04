@@ -9,14 +9,25 @@ import HTML, { HTMLSelectElementArray } from "./HTML";
 import WKT from "ol/format/WKT"
 import { map } from "mathjs";
 import { ModifyEvent } from "ol/interaction/Modify";
-import { GPX } from "ol/format";
+import { GPX, KML } from "ol/format";
+import XMLFeature from "ol/format/XMLFeature";
+
+type Config = {
+    uav: number,
+    ausrichtung: number,
+    aufloesung: number,
+    ueberlappungLaengs: number,
+    ueberlappungQuer: number,
+    gebiet: string,
+    hoehenBegrenzung: 0 | 10 | 50 | 120
+}
 
 export default class Zeichnen extends Draw {
-    private _button: HTMLButtonElement;
+    private _button: HTMLInputElement;
     private _ausrichtungSlider: HTMLInputElement;
     private _map: Map;
     private _tc: TrajectoryCalc;
-    private _gebiet: Feature<Polygon>;
+    private _gebiet: Feature<Polygon> | undefined;
     private _ueberlappungLaengsSlider: HTMLInputElement;
     private _ueberlappungQuerSlider: HTMLInputElement;
     private _aufloesungSlider: HTMLInputElement;
@@ -40,7 +51,7 @@ export default class Zeichnen extends Draw {
         this._aufloesungSlider = HTML.createSlider(menuBereich, "Auflösung [cm/px]", 1, 20, 10, 1);
         this._ueberlappungLaengsSlider = HTML.createSlider(menuBereich, "Überlappung längs [%]", 0, 90, 50, 5);
         this._ueberlappungQuerSlider = HTML.createSlider(menuBereich, "Überlappung quer [%]", 0, 90, 50, 5);
-        this._hoeheBegrenzen = HTML.createCheckbox(menuBereich, "100m-Begrenzung")
+        this._hoeheBegrenzen = HTML.createCheckbox(menuBereich, "120m-Begrenzung")
 
 
         this._flugHoeheInput = HTML.createNumberInput(menuBereich, "Flughöhe", undefined, true);
@@ -92,7 +103,9 @@ export default class Zeichnen extends Draw {
 
     private gebietUebergeben(): boolean {
         if (!this._gebiet) return false;
-        this._tc.gebiet = this._gebiet.getGeometry();
+        let g = this._gebiet.getGeometry();
+        if (!g) return false;
+        this._tc.gebiet = g;
         return true
     }
 
@@ -141,37 +154,27 @@ export default class Zeichnen extends Draw {
         }
     }
 
-    public async getConfig(): Promise<{
-        uav: number,
-        ausrichtung: number,
-        aufloesung: number,
-        ueberlappungLaengs: number,
-        ueberlappungQuer: number,
-        gebiet: string
-    }> {
+    public async getConfig(): Promise<Config> {
         let format = new WKT();
-        let geom = this._gebiet
-        let wkt = '';
-        if (geom)
-            wkt = format.writeGeometry(geom.getGeometry());
+        if (!this._gebiet) throw Error("Projekt-Gebiet nicht definiert!");
+        let geom = this._gebiet.getGeometry()
+        let wkt: string;
+        if (!geom) throw Error("Projekt-Gebiet nicht definiert!");
+        wkt = format.writeGeometry(geom);
+        let uavId = (await this._uavSelect.getSelectedEntry()).id
+        if (!uavId) throw Error("Projekt-Gebiet nicht definiert!");
         return {
-            uav: (await this._uavSelect.getSelectedEntry()).id,
+            uav: uavId,
             ausrichtung: parseInt(this._ausrichtungSlider.value),
             aufloesung: parseInt(this._aufloesungSlider.value) / 100,
             ueberlappungLaengs: parseInt(this._ueberlappungLaengsSlider.value) / 100,
             ueberlappungQuer: parseInt(this._ueberlappungQuerSlider.value) / 100,
-            gebiet: wkt
+            gebiet: wkt,
+            hoehenBegrenzung: this._hoeheBegrenzen.checked ? 120 : 0
         }
     }
 
-    public async setConfig(option: {
-        uav: number,
-        ausrichtung: number,
-        aufloesung: number,
-        ueberlappunglaengs: number,
-        ueberlappungquer: number,
-        gebiet: string
-    }) {
+    public async setConfig(option: Config) {
 
         this._uavSelect.setSelection((element) => {
             return element.id == option.uav
@@ -193,25 +196,34 @@ export default class Zeichnen extends Draw {
         this._ausrichtungSlider.dispatchEvent(new Event('change'))
         this._aufloesungSlider.value = (option.aufloesung * 100).toString();
         this._aufloesungSlider.dispatchEvent(new Event('change'))
-        this._ueberlappungLaengsSlider.value = (option.ueberlappunglaengs * 100).toString();
+        this._ueberlappungLaengsSlider.value = (option.ueberlappungLaengs * 100).toString();
         this._ueberlappungLaengsSlider.dispatchEvent(new Event('change'))
-        this._ueberlappungQuerSlider.value = (option.ueberlappungquer * 100).toString();
+        this._ueberlappungQuerSlider.value = (option.ueberlappungQuer * 100).toString();
         this._ueberlappungQuerSlider.dispatchEvent(new Event('change'))
+        this._hoeheBegrenzen.checked = (option.hoehenBegrenzung == 120);
+        this._hoeheBegrenzen.dispatchEvent(new Event('change'))
     }
 
-    public exportTrajectory() {
+    public exportTrajectory(art: 'KML' | 'GPX') {
         console.log("Export")
         let trajectory = this._map.getTrajectorySource().getFeatures()
-        let point = trajectory.filter((geom) => {
-            if (geom.getGeometry().getType() == 'Point') return geom
+        let point = trajectory.filter((feature) => {
+            let g = feature.getGeometry()
+            if (g !== undefined && g.getType() == 'Point') return feature
             else return null;
         });
-        let gpx = new GPX();
-        let gpxTxt = gpx.writeFeatures(point);
-        let link = document.createElement('a');
-        link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(gpxTxt);
-        link.download = 'test.gpx';
-        link.click()
 
+        let link = document.createElement('a');
+        let xmlData: XMLFeature;
+        if (art == 'GPX') {
+            xmlData = new GPX();
+            link.download = 'datei.gpx';
+        } else {
+            xmlData = new KML();
+            link.download = 'datei.kml';
+        }
+        let xmlDataTxt = xmlData.writeFeatures(point);
+        link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(xmlDataTxt);
+        link.click()
     }
 }

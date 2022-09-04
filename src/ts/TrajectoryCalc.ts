@@ -1,24 +1,24 @@
 import { Feature } from "ol";
 import { LineString, Point, Polygon } from "ol/geom";
 import Map from "./Map";
-import { polygon, lineString, lineIntersect, toWgs84, buffer, length as turfLength, along, toMercator, destination, length, distance } from "@turf/turf";
+import { polygon, lineString, lineIntersect, toWgs84, buffer, length as turfLength, along, toMercator, destination, length, distance, Position } from "@turf/turf";
 import UAV from "./UAV";
 import * as math from 'mathjs';
 import { abs } from "mathjs";
 
 export default class TrajectoryCalc {
     private _map: Map;
-    private _gebiet: Polygon;
+    private _gebiet: Polygon | undefined;
     private _ausrichtung: number = 0;
     private _ueberlappungQuer: number = 0.50;
     private _ueberlappungLaengs: number = 0.50;
     private _aufloesung: number = 0.1;
-    private _distanceQuer: number;
-    private _distanceLaengs: number;
-    private _uav: UAV;
+    private _distanceQuer: number = 100;
+    private _distanceLaengs: number = 100;
+    private _uav: UAV | undefined;
     private _hoeheBegrenzen: boolean = false;
     private _callback: (hoehe: number, laenge: number, dauer: number, anzahl: number) => void;
-    private _flughoehe: number;
+    private _flughoehe: number = 100;
 
 
     constructor(map: Map, callback: (hoehe: number, laenge: number, dauer: number, anzahl: number) => void) {
@@ -32,11 +32,9 @@ export default class TrajectoryCalc {
         if (this._ueberlappungQuer === undefined) return false;
         if (this._aufloesung === undefined) return false;
 
-        this._distanceQuer = 100;
-        this._distanceLaengs = 100;
         const pixelGroesse = this._uav.sensorSize[0] / this._uav.sensorPixel[0];
         this._flughoehe = this._uav.focusLength / pixelGroesse * this.aufloesung;
-        if (this._hoeheBegrenzen && this._flughoehe > 100) this._flughoehe = 100;
+        if (this._hoeheBegrenzen && this._flughoehe > 120) this._flughoehe = 120;
         const bildGroesseBoden: [number, number] = [this._uav.sensorSize[1] / this._uav.focusLength * this._flughoehe, this._uav.sensorSize[0] / this._uav.focusLength * this._flughoehe]
         this._distanceLaengs = bildGroesseBoden[1] * (1 - this._ueberlappungLaengs)
         this._distanceQuer = bildGroesseBoden[0] * (1 - this._ueberlappungQuer)
@@ -65,7 +63,7 @@ export default class TrajectoryCalc {
 
         let maxStrecke = distance([extent[0], extent[1]], [extent[2], extent[3]]) / 2.
 
-        let imgCoords = []
+        let imgCoords: [number, number][] = []
 
         for (let i = Math.floor(-maxStrecke / (this._distanceQuer / 1000.)); i < Math.ceil(maxStrecke / (this._distanceQuer / 1000.)) + 1; i++) {
             let abstand = (i - 0.5) * this._distanceQuer / 1000.
@@ -98,7 +96,7 @@ export default class TrajectoryCalc {
                 cut = cut.reverse()
             }
 
-            let cutArray = []
+            let cutArray: Position[] = []
             cut.forEach((f) => {
                 let c = f.geometry.coordinates
                 //lineCoords.push(c);
@@ -112,7 +110,7 @@ export default class TrajectoryCalc {
                 for (; versatz < l; versatz += this._distanceLaengs / 1000) {
                     let p = along(line, versatz)
                     let c = toMercator(p.geometry.coordinates);
-                    imgCoords.push(c);
+                    imgCoords.push([c[0], c[1]]);
                     this._map.getTrajectorySource().addFeature(new Feature({ geometry: new Point(c) }));
                     anzahlBilder++;
                 }
@@ -163,12 +161,12 @@ export default class TrajectoryCalc {
     ////////////////////////////////////
     ///// Getter/Setter
 
-    public get gebiet(): Polygon {
+    public get gebiet(): Polygon | undefined {
         return this._gebiet;
     }
-    public set gebiet(value: Polygon) {
+    public set gebiet(value: Polygon | undefined) {
         console.log(value)
-        if (this._gebiet == value) return;
+        if (this._gebiet == value || value == undefined) return;
         this._gebiet = value.clone();
         this.recalcTrajectory();
         console.log("Neue Geometrie")
@@ -212,7 +210,7 @@ export default class TrajectoryCalc {
     public get uav() {
         return this._uav;
     }
-    public set uav(value: UAV) {
+    public set uav(value: UAV | undefined) {
         this._uav = value;
         this.recalcTrajectory();
     }

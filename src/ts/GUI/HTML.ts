@@ -54,7 +54,7 @@ export default class HTML {
     }
 
     static createNumberInput(parent: HTMLElement, beschriftung: string, voreingestellt?: number, disabled = false): HTMLInputElement {
-        let voreingestelltString: string;
+        let voreingestelltString: string | undefined = undefined;
         if (voreingestellt) {
             voreingestelltString = voreingestellt.toString();
         }
@@ -63,7 +63,7 @@ export default class HTML {
         return intInput;
     }
 
-    static createSelect<T>(parent: HTMLElement, beschriftung: string, liste: Promise<T[]>): HTMLSelectElementArray<T> {
+    static createSelect<T extends object>(parent: HTMLElement, beschriftung: string, liste: Promise<T[]>): HTMLSelectElementArray<T> {
         let select: HTMLSelectElementArray<T> = new HTMLSelectElementArray<T>(liste, parent);
         HTML.createLabel(beschriftung, select.getHTMLElement(), parent);
         return select;
@@ -81,11 +81,13 @@ export default class HTML {
     }
 }
 
-export class HTMLSelectElementArray<T> {
+export class HTMLSelectElementArray<T extends object> {
     private htmlElement: HTMLSelectElement;
     private array: Promise<T[]>;
-    constructor(listePromise?: Promise<T[]>, parent?: HTMLElement) {
+
+    constructor(listePromise: Promise<T[]>, parent?: HTMLElement) {
         this.htmlElement = document.createElement("select");
+
         this.array = listePromise;
         this.array.then((liste) => {
             liste.forEach((eintrag) => {
@@ -95,7 +97,6 @@ export class HTMLSelectElementArray<T> {
             });
             this.getHTMLElement().dispatchEvent(new Event('change'));
         })
-
 
         if (parent) {
             parent.appendChild(this.htmlElement);

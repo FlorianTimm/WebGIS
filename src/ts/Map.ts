@@ -108,7 +108,7 @@ export default class Map extends OpenLayersMap {
                     style: (feature: FeatureLike, nr: number) => {
                         console.log(feature)
                         if (feature.get('kind') == 'construction') {
-                            return null;
+                            return [];
                         } else if (feature.get('layer') == 'landuse') {
                             if (feature.get('class') == 'industrial')
                                 return new Style({
@@ -168,9 +168,7 @@ export default class Map extends OpenLayersMap {
                                 zIndex: 3
                             })]
                         }
-                        return null;
-
-
+                        return [];
                     },
                 }),
                 new ImageLayer<ImageWMS>({
@@ -242,13 +240,14 @@ export default class Map extends OpenLayersMap {
             dropArea.addEventListener(eventName, preventDefaults, false)
         })
 
-        function preventDefaults(e) {
+        function preventDefaults(e: Event) {
             e.preventDefault()
             e.stopPropagation()
         }
 
         dropArea.addEventListener('drop', (e: DragEvent) => {
             let dt = e.dataTransfer
+            if (!dt) return;
             let files = <any>dt.files;
 
             ([...files]).forEach((file) => {
@@ -257,6 +256,7 @@ export default class Map extends OpenLayersMap {
                 reader.readAsDataURL(file)
                 reader.onloadend = () => {
                     //let img = document.createElement('img')
+                    if (!reader.result) return;
                     var blob = new Blob([reader.result]);
                     let dataurl = URL.createObjectURL(blob);
                     console.log(blob.arrayBuffer())

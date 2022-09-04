@@ -6,16 +6,19 @@ export default class UAV {
     private _focusLength: number;
     private _sensorSize: [number, number];
     private _sensorPixel: [number, number];
-    private _minspeed: number;
-    private _maxspeed: number;
-    private _curveRadius: number;
+    private _minspeed: number = 0;
+    private _maxspeed: number = 19 * 3.6;
+    private _curveRadius: number = 0;
 
     private static uavs: UAV[];
     private static uavsPromise: Promise<UAV[]>;
-    private _id: number;
+    private _id: number | undefined;
 
-    constructor(name: string) {
+    constructor(name: string, focusLength: number, sensorSize: [number, number], sensorPixel: [number, number]) {
         this._name = name;
+        this._focusLength = focusLength;
+        this._sensorPixel = sensorPixel;
+        this._sensorSize = sensorSize;
     }
 
     static async getUAVs(): Promise<UAV[]> {
@@ -32,7 +35,7 @@ export default class UAV {
     private static async loadUAVs(): Promise<UAV[]> {
         const req = await fetch('/api/uav');
         const json = await req.json();
-        let uavs = [];
+        let uavs: UAV[] = [];
         json.forEach((element: {
             id: number;
             name: string;
@@ -45,14 +48,14 @@ export default class UAV {
             sensorpixelwidth: number;
             sensorpixelheight: number;
         }) => {
-            const testUAV = new UAV(element.name);
+            const testUAV = new UAV(
+                element.name, element.focuslength ?? 5,
+                [element.sensorwidth, element.sensorheight],
+                [element.sensorpixelwidth, element.sensorpixelheight]);
             testUAV.id = element.id;
             testUAV.curveRadius = element.curveradius ?? 0;
             testUAV.maxspeed = element.maxspeed ?? 0;
             testUAV.minspeed = element.minspeed ?? 50;
-            testUAV.sensorPixel = [element.sensorpixelwidth, element.sensorpixelheight];
-            testUAV.sensorSize = [element.sensorwidth, element.sensorheight];
-            testUAV.focusLength = element.focuslength ?? 5;
             uavs.push(testUAV);
         });
         return uavs;
@@ -100,10 +103,10 @@ export default class UAV {
     public set curveRadius(value: number) {
         this._curveRadius = value;
     }
-    public get id(): number {
+    public get id(): number | undefined {
         return this._id;
     }
-    public set id(value: number) {
+    public set id(value: number | undefined) {
         this._id = value;
     }
 
