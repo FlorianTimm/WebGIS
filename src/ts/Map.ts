@@ -8,7 +8,7 @@ import OSM from "ol/source/OSM";
 import TileWMS from 'ol/source/TileWMS';
 import VectorSource from "ol/source/Vector";
 import VectorTileSource from "ol/source/VectorTile";
-import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
+import { Circle, Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import { ImageLayer, TileLayer, VectorTileLayer } from "./openLayers/Layer";
 import { defaults as controlDefaults, ScaleLine } from "ol/control";
 import TopoJSON from 'ol/format/TopoJSON';
@@ -96,12 +96,12 @@ export default class Map extends OpenLayersMap {
                     name: "BKG VectorTiles",
                     switchable: true,
                     backgroundLayer: false,
-                    visible: false,
+                    visible: true,
                     opacity: 0.5,
                     source: new VectorTileSource({
                         attributions: basemap,
                         format: new MVT({
-                            layers: ['Verkehrslinie', 'Siedlungsflaeche', 'Verkehrsflaeche', 'Grenze_Flaeche']
+                            layers: ['Verkehrslinie', 'Siedlungsflaeche', 'Verkehrsflaeche', 'Grenze_Flaeche', 'Versorgungslinie', 'Gewaesserflaeche', 'Bauwerkspunkt']
                         }),
                         url:
                             'https://sgx.geodatenzentrum.de/gdz_basemapde_vektor/tiles/v1/bm_web_de_3857/{z}/{x}/{y}.pbf',
@@ -141,6 +141,51 @@ export default class Map extends OpenLayersMap {
                                     width: (20 + (feature.get('breite') ?? 30)) / nr,
                                 }),
                                 zIndex: 3
+                            })]
+                        }
+
+                        if (feature.get('klasse') == 'Freileitung') {
+                            //console.log(feature.getProperties())
+                            return new Style({
+                                stroke: new Stroke({
+                                    color: 'red',
+                                    width: 230 / nr,
+                                }),
+                                zIndex: 3
+                            })
+                        }
+
+                        if (feature.get('klasse') == 'Windrad') {
+                            //console.log(feature.getProperties())
+                            return new Style({
+                                image: new Circle({
+                                    radius: 105 / nr,
+                                    fill: new Fill({
+                                        color: 'red',
+                                    }),
+                                }),
+                                zIndex: 3
+                            })
+                        }
+
+                        if (feature.get('kategorie') == 'Binnenwasserstraße' || feature.get('ordnung') == 'Gewässer I. Ordnung - Bundeswasserstraße' || feature.get('ordnung') == 'Gewässer I. Ordnung - nach Landesrecht') {
+                            //console.log(feature.getProperties())
+                            return [new Style({
+                                fill: new Fill({
+                                    color: 'red',
+                                }),
+                                stroke: new Stroke({
+                                    color: 'red',
+                                    width: 20 / nr,
+                                }),
+                                zIndex: 3
+                            }),
+                            new Style({
+                                stroke: new Stroke({
+                                    color: 'orange',
+                                    width: 200 / nr,
+                                }),
+                                zIndex: 1
                             })]
                         }
 
@@ -194,7 +239,42 @@ export default class Map extends OpenLayersMap {
                             })
                         }
 
+                        if (feature.get('klasse') == 'Siedlung' && (feature.get('art') == 'Geschlossen' || feature.get('art') == 'Offen')) {
+                            return new Style({
+                                fill: new Fill({
+                                    color: 'orange',
+                                }),
+                                zIndex: 2
+                            })
+                        }
+
+                        if (feature.get('klasse') == 'Raffinerie') {
+                            return new Style({
+                                fill: new Fill({
+                                    color: 'red',
+                                }),
+                                zIndex: 3
+                            })
+                        }
+
+
                         if (feature.get('funktion') == 'Sicherheit und Ordnung' || feature.get('funktion') == 'Verwaltung') {
+
+                            return new Style({
+                                fill: new Fill({
+                                    color: 'red',
+                                }),
+
+                                stroke: new Stroke({
+                                    color: 'red',
+                                    width: 200 / nr,
+                                }),
+
+                                zIndex: 3
+                            })
+                        }
+
+                        if (feature.get('klasse') == 'Kraftwerk' || feature.get('klasse') == 'Umspannstation') {
 
                             return new Style({
                                 fill: new Fill({
