@@ -231,4 +231,8 @@ export default class Zeichnen extends Draw {
         link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(xmlDataTxt);
         link.click()
     }
+
+    public get gebiet(): Feature<Polygon> | undefined {
+        return this._gebiet;
+    }
 }

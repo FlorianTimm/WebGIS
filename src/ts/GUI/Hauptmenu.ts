@@ -10,6 +10,7 @@ export default class Hauptmenu extends Menu {
     private _map: Map;
     private _source: VectorSource
     private _zeichnen: Zeichnen;
+
     constructor(map: Map, div?: HTMLElement) {
         super(div);
         this._map = map;
@@ -100,4 +101,7 @@ export default class Hauptmenu extends Menu {
         return result;
     }
 
+    public get zeichnen(): Zeichnen {
+        return this._zeichnen;
+    }
 }

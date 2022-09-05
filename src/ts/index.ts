@@ -28,6 +28,6 @@ function createMenu() {
     navigation.appendMenu(um);
 
     // Genehmigung
-    let gn = new GenehmigungMenu();
+    let gn = new GenehmigungMenu(map, hm.zeichnen);
     navigation.appendMenu(gn);
 }

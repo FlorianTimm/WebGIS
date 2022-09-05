@@ -19,6 +19,8 @@
   },
   "homepage": "https://github.com/FlorianTimm/WebGIS#readme",
   "dependencies": {
+    "@turf/boolean-disjoint": "^6.5.0",
+    "@turf/boolean-intersects": "^6.5.0",
     "@types/mathjs": "^9.4.2",
     "mathjs": "^11.1.0",
     "ol": "^7.1.0",
