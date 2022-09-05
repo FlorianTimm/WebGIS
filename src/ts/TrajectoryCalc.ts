@@ -1,10 +1,9 @@
 import { Feature } from "ol";
 import { LineString, Point, Polygon } from "ol/geom";
 import Map from "./Map";
-import { polygon, lineString, lineIntersect, toWgs84, buffer, length as turfLength, along, toMercator, destination, length, distance, Position } from "@turf/turf";
+import { polygon, lineString, lineIntersect, toWgs84, buffer, length as turfLength, along, toMercator, destination, distance, Position } from "@turf/turf";
 import UAV from "./UAV";
 import * as math from 'mathjs';
-import { abs } from "mathjs";
 
 export default class TrajectoryCalc {
     private _map: Map;

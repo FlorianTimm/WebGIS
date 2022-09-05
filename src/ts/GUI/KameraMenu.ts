@@ -19,7 +19,9 @@ export default class KameraMenu extends Menu {
         const sensorpixelheight = HTML.createNumberInput(this.getDiv(), "Pixel-Höhe")
 
         const buttonNeu = HTML.createButton(this.getDiv(), "Neu")
+        buttonNeu.addEventListener('click', () => this.neuesUAV());
         const buttonAndern = HTML.createButton(this.getDiv(), "Ändern")
+        buttonAndern.addEventListener('click', () => this.uavAendern());
 
         uavSelect.getHTMLElement().addEventListener('change', async () => {
             const entry = await uavSelect.getSelectedEntry()
@@ -38,6 +40,14 @@ export default class KameraMenu extends Menu {
 
     public getColor(): Color {
         return [200, 0, 200]
+    }
+
+    private uavAendern() {
+        alert('Noch nicht implementiert');
+    }
+
+    private neuesUAV() {
+        alert('Noch nicht implementiert');
     }
 
 }

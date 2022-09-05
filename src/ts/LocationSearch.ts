@@ -1,5 +1,4 @@
 import { Control } from "ol/control";
-import Extent from "ol/interaction/Extent";
 import { transformExtent } from "ol/proj";
 
 interface Option {

@@ -1,6 +1,3 @@
-import { string } from "mathjs";
-import { textHeights } from "ol/render/canvas";
-
 export default class UAV {
     private _name: string;
     private _focusLength: number;
@@ -10,7 +7,6 @@ export default class UAV {
     private _maxspeed: number = 19 * 3.6;
     private _curveRadius: number = 0;
 
-    private static uavs: UAV[];
     private static uavsPromise: Promise<UAV[]>;
     private _id: number | undefined;
 
@@ -28,37 +24,47 @@ export default class UAV {
         return this.uavsPromise
     }
 
+    /*
     private static newUAV() {
 
     }
+    */
 
     private static async loadUAVs(): Promise<UAV[]> {
-        const req = await fetch('/api/uav');
-        const json = await req.json();
-        let uavs: UAV[] = [];
-        json.forEach((element: {
-            id: number;
-            name: string;
-            curveradius: number;
-            minspeed: number;
-            maxspeed: number;
-            sensorwidth: number;
-            sensorheight: number;
-            focuslength: number;
-            sensorpixelwidth: number;
-            sensorpixelheight: number;
-        }) => {
-            const testUAV = new UAV(
-                element.name, element.focuslength ?? 5,
-                [element.sensorwidth, element.sensorheight],
-                [element.sensorpixelwidth, element.sensorpixelheight]);
-            testUAV.id = element.id;
-            testUAV.curveRadius = element.curveradius ?? 0;
-            testUAV.maxspeed = element.maxspeed ?? 0;
-            testUAV.minspeed = element.minspeed ?? 50;
-            uavs.push(testUAV);
-        });
-        return uavs;
+        return fetch('/api/uav')
+            .then((req) => {
+                if (req.status != 200)
+                    return fetch('/uav.json')
+                return req;
+            })
+            .then(req => req.json())
+            .then((json) => {
+                let uavs: UAV[] = [];
+                json.forEach((element: {
+                    id: number;
+                    name: string;
+                    curveradius: number;
+                    minspeed: number;
+                    maxspeed: number;
+                    sensorwidth: number;
+                    sensorheight: number;
+                    focuslength: number;
+                    sensorpixelwidth: number;
+                    sensorpixelheight: number;
+                }) => {
+                    const testUAV = new UAV(
+                        element.name, element.focuslength ?? 5,
+                        [element.sensorwidth, element.sensorheight],
+                        [element.sensorpixelwidth, element.sensorpixelheight]);
+                    testUAV.id = element.id;
+                    testUAV.curveRadius = element.curveradius ?? 0;
+                    testUAV.maxspeed = element.maxspeed ?? 0;
+                    testUAV.minspeed = element.minspeed ?? 50;
+                    uavs.push(testUAV);
+                });
+                return uavs;
+            })
+
     }
 
     public toString() {

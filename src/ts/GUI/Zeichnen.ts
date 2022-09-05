@@ -7,11 +7,9 @@ import TrajectoryCalc from "../TrajectoryCalc";
 import UAV from "../UAV";
 import HTML, { HTMLSelectElementArray } from "./HTML";
 import WKT from "ol/format/WKT"
-import { map } from "mathjs";
 import { ModifyEvent } from "ol/interaction/Modify";
 import { GPX, KML } from "ol/format";
 import XMLFeature from "ol/format/XMLFeature";
-import { transform } from "ol/proj";
 
 type Config = {
     uav: number,

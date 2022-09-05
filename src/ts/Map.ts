@@ -1,5 +1,5 @@
 import { Map as OpenLayersMap, View } from "ol";
-import { Geometry, LineString, Point, Polygon } from "ol/geom";
+import { LineString, Point, Polygon } from "ol/geom";
 import { DoubleClickZoom } from "ol/interaction";
 import VectorLayer from "ol/layer/Vector";
 import { fromLonLat } from "ol/proj";
@@ -11,7 +11,6 @@ import VectorTileSource from "ol/source/VectorTile";
 import { Circle, Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import { ImageLayer, TileLayer, VectorTileLayer } from "./openLayers/Layer";
 import { defaults as controlDefaults, ScaleLine } from "ol/control";
-import TopoJSON from 'ol/format/TopoJSON';
 import { FeatureLike } from "ol/Feature";
 import MVT from 'ol/format/MVT';
 import LocationSearch from "./LocationSearch";
@@ -93,7 +92,7 @@ export default class Map extends OpenLayersMap {
                 }),
                 new VectorTileLayer({
 
-                    name: "BKG VectorTiles",
+                    name: "Flugverbotszonen (BKG VectorTiles)",
                     switchable: true,
                     backgroundLayer: false,
                     visible: true,
@@ -303,7 +302,7 @@ export default class Map extends OpenLayersMap {
                         return [];
                     },
                 }),
-                new VectorTileLayer({
+                /*new VectorTileLayer({
                     name: "Flugbeschränkungen (VectorTiles)",
                     switchable: true,
                     backgroundLayer: false,
@@ -384,7 +383,7 @@ export default class Map extends OpenLayersMap {
                         }
                         return [];
                     },
-                }),
+                }),*/
                 new ImageLayer<ImageWMS>({
                     name: "Gebietsgrenzen",
                     switchable: true,
@@ -473,7 +472,7 @@ export default class Map extends OpenLayersMap {
                     //let img = document.createElement('img')
                     if (!reader.result) return;
                     var blob = new Blob([reader.result]);
-                    let dataurl = URL.createObjectURL(blob);
+                    //let dataurl = URL.createObjectURL(blob);
                     console.log(blob.arrayBuffer())
                     let geotiff = new GeoTIFF({
                         sources: [{
