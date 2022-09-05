@@ -1,5 +1,5 @@
 import { Map as OpenLayersMap, View } from "ol";
-import { LineString, Point, Polygon } from "ol/geom";
+import { Geometry, LineString, Point, Polygon } from "ol/geom";
 import { DoubleClickZoom } from "ol/interaction";
 import VectorLayer from "ol/layer/Vector";
 import { fromLonLat } from "ol/proj";
@@ -23,9 +23,10 @@ export default class Map extends OpenLayersMap {
 
     constructor() {
 
-        var fhh = '&copy; Freie und Hansestadt Hamburg, Behörde für Verkehr und Mobilitätswende';
-        var lgv = '&copy; Freie und Hansestadt Hamburg, Landesbetrieb Geoinformation und Vermessung';
-        var bkg = '&copy; GeoBasis-DE / BKG 2022';
+        let fhh = '&copy; Freie und Hansestadt Hamburg, Behörde für Verkehr und Mobilitätswende';
+        let lgv = '&copy; Freie und Hansestadt Hamburg, Landesbetrieb Geoinformation und Vermessung';
+        let bkg = '&copy; GeoBasis-DE / BKG 2022';
+        let basemap = '&copy; basemap.de / BKG September 2022'
 
         super({
             target: 'map',
@@ -34,7 +35,7 @@ export default class Map extends OpenLayersMap {
                     name: 'LGV schwarz-grau',
                     backgroundLayer: true,
                     switchable: true,
-                    visible: true,
+                    visible: false,
                     source: new TileWMS({
                         url: 'https://geodienste.hamburg.de/HH_WMS_Geobasiskarten_SG?',
                         params: {
@@ -71,7 +72,7 @@ export default class Map extends OpenLayersMap {
                     name: "BaseMapDE",
                     backgroundLayer: true,
                     switchable: true,
-                    visible: false,
+                    visible: true,
                     source: new TileWMS({
                         url: 'https://sgx.geodatenzentrum.de/wms_basemapde?',
                         params: {
@@ -89,6 +90,138 @@ export default class Map extends OpenLayersMap {
                         params: { 'LAYERS': 'Krankenhaeuser,Flugplaetze,Hubschrauberlandeplaetze' },
                         attributions: [fhh]
                     }),
+                }),
+                new VectorTileLayer({
+
+                    name: "BKG VectorTiles",
+                    switchable: true,
+                    backgroundLayer: false,
+                    visible: false,
+                    opacity: 0.5,
+                    source: new VectorTileSource({
+                        attributions: basemap,
+                        format: new MVT({
+                            layers: ['Verkehrslinie', 'Siedlungsflaeche', 'Verkehrsflaeche', 'Grenze_Flaeche']
+                        }),
+                        url:
+                            'https://sgx.geodatenzentrum.de/gdz_basemapde_vektor/tiles/v1/bm_web_de_3857/{z}/{x}/{y}.pbf',
+                    }),
+                    style: (feature: FeatureLike, nr: number) => {
+
+                        if (feature.get('klasse') == 'Bundesstraße') {
+                            //console.log(feature.getProperties())
+                            return [new Style({
+                                stroke: new Stroke({
+                                    color: 'yellow',
+                                    width: (200 + (feature.get('breite') ?? 10)) / nr,
+                                }),
+                                zIndex: 1
+                            }),
+                            new Style({
+                                stroke: new Stroke({
+                                    color: 'red',
+                                    width: (20 + (feature.get('breite') ?? 10)) / nr,
+                                }),
+                                zIndex: 3
+                            })]
+                        }
+
+                        if (feature.get('klasse') == 'Bundesautobahn') {
+                            //console.log(feature.getProperties())
+                            return [new Style({
+                                stroke: new Stroke({
+                                    color: 'yellow',
+                                    width: (200 + (feature.get('breite') ?? 30)) / nr,
+                                }),
+                                zIndex: 1
+                            }),
+                            new Style({
+                                stroke: new Stroke({
+                                    color: 'red',
+                                    width: (20 + (feature.get('breite') ?? 30)) / nr,
+                                }),
+                                zIndex: 3
+                            })]
+                        }
+
+                        if (feature.get('klasse') == 'Bahnverkehr') {
+
+                            return [new Style({
+                                stroke: new Stroke({
+                                    color: 'yellow',
+                                    width: 200 / nr,
+                                }),
+
+                                zIndex: 1
+                            }), new Style({
+                                fill: new Fill({
+                                    color: 'red',
+                                }),
+
+                                stroke: new Stroke({
+                                    color: 'red',
+                                    width: 20 / nr,
+                                }),
+
+                                zIndex: 3
+                            }),]
+                        }
+
+                        if (feature.get('klasse') == 'Eisenbahn') {
+                            //console.log(feature.getProperties())
+                            return [new Style({
+                                stroke: new Stroke({
+                                    color: 'yellow',
+                                    width: (200 + (feature.get('anzahl') ?? 2000) / 200) / nr,
+                                }),
+                                zIndex: 1
+                            }),
+                            new Style({
+                                stroke: new Stroke({
+                                    color: 'red',
+                                    width: (20 + (feature.get('anzahl') ?? 2000) / 200) / nr,
+                                }),
+                                zIndex: 3
+                            })]
+                        }
+
+                        if (feature.get('klasse') == 'Industrie- und Gewerbefläche') {
+                            return new Style({
+                                fill: new Fill({
+                                    color: 'orange',
+                                }),
+                                zIndex: 2
+                            })
+                        }
+
+                        if (feature.get('funktion') == 'Sicherheit und Ordnung' || feature.get('funktion') == 'Verwaltung') {
+
+                            return new Style({
+                                fill: new Fill({
+                                    color: 'red',
+                                }),
+
+                                stroke: new Stroke({
+                                    color: 'red',
+                                    width: 200 / nr,
+                                }),
+
+                                zIndex: 3
+                            })
+                        }
+
+                        if (feature.get('klasse') == 'Naturschutzgebiet') {
+                            return new Style({
+                                fill: new Fill({
+                                    color: 'red',
+                                }),
+                                zIndex: 3
+                            })
+                        }
+
+
+                        return [];
+                    },
                 }),
                 new VectorTileLayer({
                     name: "Flugbeschränkungen (VectorTiles)",
@@ -123,7 +256,7 @@ export default class Map extends OpenLayersMap {
                                 //console.log(feature.getProperties())
                                 return [new Style({
                                     stroke: new Stroke({
-                                        color: 'orange',
+                                        color: 'yellow',
                                         width: 215 / nr,
                                     }),
                                     zIndex: 1
@@ -138,7 +271,7 @@ export default class Map extends OpenLayersMap {
                             } else if ((<string>feature.get('ref') ?? '').startsWith('A')) {
                                 return [new Style({
                                     stroke: new Stroke({
-                                        color: 'orange',
+                                        color: 'yellow',
                                         width: 235 / nr,
 
                                     }),
@@ -156,7 +289,7 @@ export default class Map extends OpenLayersMap {
                         } else if (feature.get('layer') == 'transportation' && feature.get('class') == 'rail') {
                             return [new Style({
                                 stroke: new Stroke({
-                                    color: 'orange',
+                                    color: 'yellow',
                                     width: 205 / nr,
                                 }),
                                 zIndex: 1

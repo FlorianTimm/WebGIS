@@ -6,6 +6,7 @@ import Hauptmenu from "./GUI/Hauptmenu";
 import { Navigation } from "./GUI/Navigation";
 import { LayerMenu } from "./GUI/LayerMenu";
 import KameraMenu from "./GUI/KameraMenu";
+import GenehmigungMenu from "./GUI/GenehmigungMenu";
 
 let map = new Map();
 
@@ -25,4 +26,8 @@ function createMenu() {
     // UAV-Auswahl
     let um = new KameraMenu();
     navigation.appendMenu(um);
+
+    // Genehmigung
+    let gn = new GenehmigungMenu();
+    navigation.appendMenu(gn);
 }
