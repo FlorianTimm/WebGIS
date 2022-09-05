@@ -14,6 +14,7 @@ import { defaults as controlDefaults, ScaleLine } from "ol/control";
 import TopoJSON from 'ol/format/TopoJSON';
 import { FeatureLike } from "ol/Feature";
 import MVT from 'ol/format/MVT';
+import LocationSearch from "./LocationSearch";
 
 export default class Map extends OpenLayersMap {
 
@@ -186,7 +187,8 @@ export default class Map extends OpenLayersMap {
                 zoom: 10
             }),
             controls: controlDefaults().extend([
-                new ScaleLine()
+                new ScaleLine(),
+                new LocationSearch({ top: '10px', right: '10px' }),
             ]),
         });
 
