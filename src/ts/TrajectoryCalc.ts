@@ -38,7 +38,7 @@ export default class TrajectoryCalc {
         this._distanceLaengs = bildGroesseBoden[1] * (1 - this._ueberlappungLaengs)
         this._distanceQuer = bildGroesseBoden[0] * (1 - this._ueberlappungQuer)
 
-        console.log(this._distanceQuer, this._distanceLaengs)
+        //console.log(this._distanceQuer, this._distanceLaengs)
         return true;
     }
 
@@ -75,11 +75,11 @@ export default class TrajectoryCalc {
             let c2 = destination(c0, maxStrecke, this.ausrichtung < 90 ? this.ausrichtung + 90 : this._ausrichtung - 270)
 
 
-            console.log(c1, c2)
+            //console.log(c1, c2)
 
             let cut = lineIntersect(lineString([c1.geometry.coordinates, c2.geometry.coordinates]), poly).features
 
-            console.log(poly, cut)
+            //console.log(poly, cut)
 
             cut.sort((a, b) => {
                 for (let x = 0; x < Math.min(a.geometry.coordinates.length, b.geometry.coordinates.length); x++) {
