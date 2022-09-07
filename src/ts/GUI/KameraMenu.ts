@@ -50,8 +50,8 @@ export default class KameraMenu extends Menu {
         this.focusLength.value = entry.focusLength.toString()
         this.sensorheight.value = entry.sensorSize[1].toString();
         this.sensorwidth.value = entry.sensorSize[0].toString();
-        this.sensorpixelheight.value = entry.sensorPixel[0].toString();
-        this.sensorpixelwidth.value = entry.sensorPixel[1].toString();
+        this.sensorpixelheight.value = entry.sensorPixel[1].toString();
+        this.sensorpixelwidth.value = entry.sensorPixel[0].toString();
     }
 
     private async uavAendern() {

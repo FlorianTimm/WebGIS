@@ -117,12 +117,16 @@ export class HTMLSelectElementArray<T extends object> {
         });
     }
 
-    updateListe(liste: T[]) {
+    async updateListe(liste: T[], preselect?: T) {
+        let selected = preselect ?? await this.getSelectedEntry();
         this.htmlElement.innerHTML = "";
         liste.forEach((eintrag) => {
             let option = document.createElement('option');
             option.innerHTML = eintrag.toString();
             this.htmlElement.appendChild(option);
+            if (eintrag == selected) {
+                option.selected = true;
+            }
         });
         this.getHTMLElement().dispatchEvent(new Event('change'));
     }
