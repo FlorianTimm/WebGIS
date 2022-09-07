@@ -48,14 +48,22 @@ export default class KameraMenu extends Menu {
         const entry = await this.uavSelect.getSelectedEntry()
         this.name.value = entry.name;
         this.focusLength.value = entry.focusLength.toString()
-        this.sensorheight.value = entry.sensorSize[0].toString();
-        this.sensorwidth.value = entry.sensorSize[1].toString();
-        this.sensorpixelheight.value = entry.sensorPixel[1].toString();
-        this.sensorpixelwidth.value = entry.sensorPixel[0].toString();
+        this.sensorheight.value = entry.sensorSize[1].toString();
+        this.sensorwidth.value = entry.sensorSize[0].toString();
+        this.sensorpixelheight.value = entry.sensorPixel[0].toString();
+        this.sensorpixelwidth.value = entry.sensorPixel[1].toString();
     }
 
-    private uavAendern() {
-        alert('Noch nicht implementiert');
+    private async uavAendern() {
+        const entry = await this.uavSelect.getSelectedEntry()
+        entry.update({
+            name: this.name.value,
+            focuslength: parseFloat(this.focusLength.value),
+            sensorheight: parseFloat(this.sensorheight.value),
+            sensorwidth: parseFloat(this.sensorwidth.value),
+            sensorpixelheight: parseInt(this.sensorpixelheight.value),
+            sensorpixelwidth: parseInt(this.sensorpixelwidth.value)
+        })
     }
 
     private neuesUAV() {

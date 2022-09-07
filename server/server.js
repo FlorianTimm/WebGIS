@@ -30,6 +30,15 @@ app.get("/uav", function (req, res) {
     });
 })
 
+// Einzeln
+app.get("/uav/:uav", function (req, res) {
+    const stmt = db.prepare("SELECT * FROM uav WHERE id = ?");
+    stmt.get(req.params.uav, (_, row) => {
+        res.send(row);
+        console.log(row)
+    });
+})
+
 // Neu
 app.post("/uav", function (req, res) {
     const stmt = db.prepare("INSERT INTO uav(name, focuslength, sensorwidth, sensorheight, sensorpixelwidth, sensorpixelheight) VALUES (?,?,?,?,?,?) RETURNING *;");
@@ -49,6 +58,29 @@ app.post("/uav", function (req, res) {
                 res.sendStatus(501);
         } else {
             //res.sendStatus(201);
+            res.status(201).send(row)
+        }
+    });
+})
+// Ändern
+app.put("/uav/:uav", function (req, res) {
+    const stmt = db.prepare("UPDATE uav SET name = ?, focuslength = ?, sensorwidth = ?, sensorheight = ?, sensorpixelwidth = ?, sensorpixelheight = ? WHERE id = ? RETURNING *;");
+    console.log(req.body)
+    stmt.get([
+        req.body.name,
+        req.body.focuslength,
+        req.body.sensorwidth,
+        req.body.sensorheight,
+        req.body.sensorpixelwidth,
+        req.body.sensorpixelheight,
+        req.params.uav
+    ], (error, row) => {
+        if (error) {
+            if (error.code == 'SQLITE_CONSTRAINT')
+                res.sendStatus(409);
+            else
+                res.sendStatus(501);
+        } else {
             res.status(201).send(row)
         }
     });

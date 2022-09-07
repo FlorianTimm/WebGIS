@@ -12,6 +12,7 @@ export interface UAVdata {
 }
 
 export default class UAV {
+
     private _name: string;
     private _focusLength: number;
     private _sensorSize: [number, number];
@@ -35,6 +36,48 @@ export default class UAV {
         this.curveRadius = element.curveradius ?? this._curveRadius;
         this.maxspeed = element.maxspeed ?? this.maxspeed;
         this.minspeed = element.minspeed ?? this.minspeed;
+    }
+
+    update(element: UAVdata) {
+        this._name = element.name ?? this._name;
+        this._focusLength = element.focuslength ?? this._focusLength;
+        this._sensorSize = [element.sensorwidth ?? this._sensorSize[0], element.sensorheight ?? this._sensorSize[1]];
+        this._sensorPixel = [element.sensorpixelwidth ?? this._sensorPixel[0], element.sensorpixelheight ?? this._sensorPixel[1]];
+
+        this.curveRadius = element.curveradius ?? this._curveRadius;
+        this.maxspeed = element.maxspeed ?? this.maxspeed;
+        this.minspeed = element.minspeed ?? this.minspeed;
+        return fetch('/api/uav/' + this.id, {
+            method: 'PUT',
+            body: JSON.stringify({
+                name: this.name,
+                curveradius: this.curveRadius,
+                minspeed: this.minspeed,
+                maxspeed: this.maxspeed,
+                sensorwidth: this.sensorSize[0],
+                sensorheight: this.sensorSize[1],
+                focuslength: this.focusLength,
+                sensorpixelwidth: this.sensorPixel[0],
+                sensorpixelheight: this.sensorPixel[1]
+            }),
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8'
+            }
+        })
+            .then(req => {
+                if (req.status != 201) {
+                    if (req.status == 409) {
+                        alert("Konnte Datensatz nicht einfügen (Namenskonflikt)")
+                    } else {
+                        alert("Fehler beim Einfügen!")
+                    }
+                    return Promise.reject();
+                }
+                return req
+            })
+            .then(() => {
+                UAV.informObserver();
+            })
     }
 
     static async getUAVs(): Promise<UAV[]> {

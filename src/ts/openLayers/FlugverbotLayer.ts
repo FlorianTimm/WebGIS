@@ -285,7 +285,6 @@ export class FlugverbotVectorTiles extends VectorTileLayer {
         }
 
         if (r.title == FlugverbotVectorTiles._selection) {
-            console.log('Markiert')
             r.style.push(new Style({
                 fill: new Fill({
                     color: 'blue',
