@@ -45,6 +45,10 @@ export default class Zeichnen extends Draw {
         this._map = map;
 
         this._uavSelect = HTML.createSelect(menuBereich, "UAV", UAV.getUAVs());
+        UAV.onChange((liste) => {
+            this._uavSelect.updateListe(liste);
+        })
+
         this._button = HTML.createButton(menuBereich, "Gebiet zeichnen");
         this._ausrichtungSlider = HTML.createSlider(menuBereich, "Ausrichtung", 0, 360, 0, 5);
         this._aufloesungSlider = HTML.createSlider(menuBereich, "Auflösung [cm/px]", 1, 20, 10, 1);

@@ -30,6 +30,30 @@ app.get("/uav", function (req, res) {
     });
 })
 
+// Neu
+app.post("/uav", function (req, res) {
+    const stmt = db.prepare("INSERT INTO uav(name, focuslength, sensorwidth, sensorheight, sensorpixelwidth, sensorpixelheight) VALUES (?,?,?,?,?,?) RETURNING *;");
+    console.log(req.body)
+    stmt.get([
+        req.body.name,
+        req.body.focuslength,
+        req.body.sensorwidth,
+        req.body.sensorheight,
+        req.body.sensorpixelwidth,
+        req.body.sensorpixelheight
+    ], (error, row) => {
+        if (error) {
+            if (error.code == 'SQLITE_CONSTRAINT')
+                res.sendStatus(409);
+            else
+                res.sendStatus(501);
+        } else {
+            //res.sendStatus(201);
+            res.status(201).send(row)
+        }
+    });
+})
+
 // Projekt
 app.get("/projekt/:projekt", function (req, res) {
     const stmt = db.prepare("SELECT * FROM projekt WHERE projekt = ?");

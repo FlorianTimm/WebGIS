@@ -90,12 +90,7 @@ export class HTMLSelectElementArray<T extends object> {
 
         this.array = listePromise;
         this.array.then((liste) => {
-            liste.forEach((eintrag) => {
-                let option = document.createElement('option');
-                option.innerHTML = eintrag.toString();
-                this.htmlElement.appendChild(option);
-            });
-            this.getHTMLElement().dispatchEvent(new Event('change'));
+            this.updateListe(liste)
         })
 
         if (parent) {
@@ -120,5 +115,15 @@ export class HTMLSelectElementArray<T extends object> {
                 return;
             }
         });
+    }
+
+    updateListe(liste: T[]) {
+        this.htmlElement.innerHTML = "";
+        liste.forEach((eintrag) => {
+            let option = document.createElement('option');
+            option.innerHTML = eintrag.toString();
+            this.htmlElement.appendChild(option);
+        });
+        this.getHTMLElement().dispatchEvent(new Event('change'));
     }
 }

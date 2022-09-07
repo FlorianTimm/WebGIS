@@ -4,34 +4,36 @@ import HTML from "./HTML";
 import Menu from "./Menu";
 
 export default class KameraMenu extends Menu {
+    private uavSelect: import("/mnt/ssd/Studium/MScGeodaesieGeoinformatik/2. Semester/WebGIS/UAVplaning/src/ts/GUI/HTML").HTMLSelectElementArray<UAV>;
+    private name: HTMLInputElement;
+    private focusLength: HTMLInputElement;
+    private sensorwidth: HTMLInputElement;
+    private sensorheight: HTMLInputElement;
+    private sensorpixelwidth: HTMLInputElement;
+    private sensorpixelheight: HTMLInputElement;
 
     constructor(div?: HTMLElement) {
         super(div);
         div = this.getDiv();
 
-        const uavSelect = HTML.createSelect(this.getDiv(), "UAV", UAV.getUAVs());
+        this.uavSelect = HTML.createSelect(this.getDiv(), "UAV", UAV.getUAVs());
+        UAV.onChange((liste) => {
+            this.uavSelect.updateListe(liste);
+        })
 
-        const name = HTML.createInput(this.getDiv(), "Name")
-        const focusLength = HTML.createNumberInput(this.getDiv(), "Brennweite")
-        const sensorwidth = HTML.createNumberInput(this.getDiv(), "Sensor-Breite")
-        const sensorheight = HTML.createNumberInput(this.getDiv(), "Sensor-Höhe")
-        const sensorpixelwidth = HTML.createNumberInput(this.getDiv(), "Pixel-Breite")
-        const sensorpixelheight = HTML.createNumberInput(this.getDiv(), "Pixel-Höhe")
+        this.name = HTML.createInput(this.getDiv(), "Name")
+        this.focusLength = HTML.createNumberInput(this.getDiv(), "Brennweite")
+        this.sensorwidth = HTML.createNumberInput(this.getDiv(), "Sensor-Breite")
+        this.sensorheight = HTML.createNumberInput(this.getDiv(), "Sensor-Höhe")
+        this.sensorpixelwidth = HTML.createNumberInput(this.getDiv(), "Pixel-Breite")
+        this.sensorpixelheight = HTML.createNumberInput(this.getDiv(), "Pixel-Höhe")
 
         const buttonNeu = HTML.createButton(this.getDiv(), "Neu")
         buttonNeu.addEventListener('click', () => this.neuesUAV());
         const buttonAndern = HTML.createButton(this.getDiv(), "Ändern")
         buttonAndern.addEventListener('click', () => this.uavAendern());
 
-        uavSelect.getHTMLElement().addEventListener('change', async () => {
-            const entry = await uavSelect.getSelectedEntry()
-            name.value = entry.name;
-            focusLength.value = entry.focusLength.toString()
-            sensorheight.value = entry.sensorSize[0].toString();
-            sensorwidth.value = entry.sensorSize[1].toString();
-            sensorpixelheight.value = entry.sensorPixel[1].toString();
-            sensorpixelwidth.value = entry.sensorPixel[0].toString();
-        })
+        this.uavSelect.getHTMLElement().addEventListener('change', () => this.uavChange())
     }
 
     public getName(): string {
@@ -42,12 +44,29 @@ export default class KameraMenu extends Menu {
         return [200, 0, 200]
     }
 
+    private async uavChange() {
+        const entry = await this.uavSelect.getSelectedEntry()
+        this.name.value = entry.name;
+        this.focusLength.value = entry.focusLength.toString()
+        this.sensorheight.value = entry.sensorSize[0].toString();
+        this.sensorwidth.value = entry.sensorSize[1].toString();
+        this.sensorpixelheight.value = entry.sensorPixel[1].toString();
+        this.sensorpixelwidth.value = entry.sensorPixel[0].toString();
+    }
+
     private uavAendern() {
         alert('Noch nicht implementiert');
     }
 
     private neuesUAV() {
-        alert('Noch nicht implementiert');
+        UAV.createUAV({
+            name: this.name.value,
+            focuslength: parseFloat(this.focusLength.value),
+            sensorheight: parseFloat(this.sensorheight.value),
+            sensorwidth: parseFloat(this.sensorwidth.value),
+            sensorpixelheight: parseInt(this.sensorpixelheight.value),
+            sensorpixelwidth: parseInt(this.sensorpixelwidth.value)
+        })
     }
 
 }

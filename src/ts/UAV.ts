@@ -1,3 +1,16 @@
+export interface UAVdata {
+    id?: number;
+    name: string;
+    curveradius?: number;
+    minspeed?: number;
+    maxspeed?: number;
+    sensorwidth: number;
+    sensorheight: number;
+    focuslength: number;
+    sensorpixelwidth: number;
+    sensorpixelheight: number;
+}
+
 export default class UAV {
     private _name: string;
     private _focusLength: number;
@@ -10,11 +23,18 @@ export default class UAV {
     private static uavsPromise: Promise<UAV[]>;
     private _id: number | undefined;
 
-    constructor(name: string, focusLength: number, sensorSize: [number, number], sensorPixel: [number, number]) {
-        this._name = name;
-        this._focusLength = focusLength;
-        this._sensorPixel = sensorPixel;
-        this._sensorSize = sensorSize;
+    private static callbacks: ((liste: UAV[]) => void)[] = [];
+
+    private constructor(element: UAVdata) {
+        this.id = element.id;
+        this._name = element.name;
+        this._focusLength = element.focuslength ?? 5;
+        this._sensorSize = [element.sensorwidth, element.sensorheight];
+        this._sensorPixel = [element.sensorpixelwidth, element.sensorpixelheight];
+
+        this.curveRadius = element.curveradius ?? this._curveRadius;
+        this.maxspeed = element.maxspeed ?? this.maxspeed;
+        this.minspeed = element.minspeed ?? this.minspeed;
     }
 
     static async getUAVs(): Promise<UAV[]> {
@@ -24,11 +44,45 @@ export default class UAV {
         return this.uavsPromise
     }
 
-    /*
-    private static newUAV() {
-
+    public static onChange(callback: (liste: UAV[]) => void) {
+        UAV.callbacks.push(callback)
     }
-    */
+
+    private static informObserver() {
+        UAV.callbacks.forEach(async (callback) => {
+            callback(await UAV.uavsPromise)
+        });
+    }
+
+
+    public static createUAV(data: UAVdata): Promise<UAV> {
+        return fetch('/api/uav', {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8'
+            },
+        })
+            .then(req => {
+                if (req.status != 201) {
+                    if (req.status == 409) {
+                        alert("Konnte Datensatz nicht einfügen (Namenskonflikt)")
+                    } else {
+                        alert("Fehler beim Einfügen!")
+                    }
+                    return Promise.reject();
+                }
+                return req
+            })
+            .then(req => req.json())
+            .then(async (json: UAVdata) => {
+                let uav = new UAV(json);
+                (await this.getUAVs()).push(uav)
+                UAV.informObserver();
+                return uav;
+            })
+    }
+
 
     private static async loadUAVs(): Promise<UAV[]> {
         return fetch('/api/uav')
@@ -40,27 +94,9 @@ export default class UAV {
             .then(req => req.json())
             .then((json) => {
                 let uavs: UAV[] = [];
-                json.forEach((element: {
-                    id: number;
-                    name: string;
-                    curveradius: number;
-                    minspeed: number;
-                    maxspeed: number;
-                    sensorwidth: number;
-                    sensorheight: number;
-                    focuslength: number;
-                    sensorpixelwidth: number;
-                    sensorpixelheight: number;
-                }) => {
-                    const testUAV = new UAV(
-                        element.name, element.focuslength ?? 5,
-                        [element.sensorwidth, element.sensorheight],
-                        [element.sensorpixelwidth, element.sensorpixelheight]);
-                    testUAV.id = element.id;
-                    testUAV.curveRadius = element.curveradius ?? 0;
-                    testUAV.maxspeed = element.maxspeed ?? 0;
-                    testUAV.minspeed = element.minspeed ?? 50;
-                    uavs.push(testUAV);
+                json.forEach((element: UAVdata) => {
+                    uavs.push(new UAV(element));
+                    UAV.informObserver();
                 });
                 return uavs;
             })
@@ -77,12 +113,14 @@ export default class UAV {
         return this._focusLength;
     }
     public set focusLength(value: number) {
+        UAV.informObserver();
         this._focusLength = value;
     }
     public get sensorSize(): [number, number] {
         return this._sensorSize;
     }
     public set sensorSize(value: [number, number]) {
+        UAV.informObserver();
         this._sensorSize = value;
     }
     public get sensorPixel(): [number, number] {
@@ -90,30 +128,35 @@ export default class UAV {
     }
     public set sensorPixel(value: [number, number]) {
         this._sensorPixel = value;
+        UAV.informObserver();
     }
     public get minspeed(): number {
         return this._minspeed;
     }
     public set minspeed(value: number) {
         this._minspeed = value;
+        UAV.informObserver();
     }
     public get maxspeed(): number {
         return this._maxspeed;
     }
     public set maxspeed(value: number) {
         this._maxspeed = value;
+        UAV.informObserver();
     }
     public get curveRadius(): number {
         return this._curveRadius;
     }
     public set curveRadius(value: number) {
         this._curveRadius = value;
+        UAV.informObserver();
     }
     public get id(): number | undefined {
         return this._id;
     }
     public set id(value: number | undefined) {
         this._id = value;
+        UAV.informObserver();
     }
 
     public get name(): string {
