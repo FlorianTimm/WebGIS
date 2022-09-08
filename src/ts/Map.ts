@@ -12,6 +12,7 @@ import { ImageLayer, TileLayer } from "./openLayers/Layer";
 import { defaults as controlDefaults, ScaleLine } from "ol/control";
 import LocationSearch from "./LocationSearch";
 import { FlugverbotVectorTiles } from "./openLayers/FlugverbotLayer";
+import WebGLTileLayer from "ol/layer/WebGLTile";
 
 export default class Map extends OpenLayersMap {
 
@@ -172,30 +173,33 @@ export default class Map extends OpenLayersMap {
         dropArea.addEventListener('drop', (e: DragEvent) => {
             let dt = e.dataTransfer
             if (!dt) return;
-            let files = <any>dt.files;
+            let files = dt.files
+            for (let i = 0; i < files.length; i++) {
 
-            ([...files]).forEach((file) => {
+                let file = files.item(i);
+                if (file === null) return;
                 console.log(file);
-                let reader = new FileReader()
-                reader.readAsDataURL(file)
-                reader.onloadend = () => {
-                    //let img = document.createElement('img')
-                    if (!reader.result) return;
-                    var blob = new Blob([reader.result]);
-                    //let dataurl = URL.createObjectURL(blob);
-                    console.log(blob.arrayBuffer())
-                    let geotiff = new GeoTIFF({
-                        sources: [{
-                            blob: blob
-                        }],
-                    })
-                    let layer = new TileLayer({
-                        source: geotiff,
-                    });
-                    this.addLayer(layer)
+                let dataurl = URL.createObjectURL(file);
+                let geotiff = new GeoTIFF({
+                    sources: [
+                        {
+                            url: dataurl,
+                            min: 0,
+                            max: 255,
+                            nodata: 0,
+                        }
+                    ]
+                })
+                console.log(geotiff)
+                let layer = new WebGLTileLayer({
+                    source: geotiff,
+                });
 
-                }
-            });
+                this.addLayer(layer)
+                console.log("hinzu")
+
+                // }
+            };
         });
     }
 
