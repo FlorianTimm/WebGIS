@@ -15,16 +15,16 @@ db.exec("INSERT INTO uav VALUES (4,'DJI Mini 2', 0.00427046263, 0.00617, 0.00455
 db.exec("INSERT INTO projekt (projekt, gebiet, uav, ueberlappunglaengs, ueberlappungquer, ausrichtung, aufloesung, hoehenBegrenzung) VALUES ('test', 'POLYGON((1109978.6465459517 7065454.731937807,1110001.2252990762 7066459.486451852,1110497.9578678177 7066978.797773719,1111130.1629553067 7066877.193384658,1111407.8611384388 7065845.2214850625,1111035.3117118822 7064467.917544465,1110516.0003900162 7064106.6574944705,1110041.8465743996 7064309.866272592,1109978.6465459517 7065454.731937807))', 4, 0.5, 0.5, 90, 0.1, 120);")
 
 
-let app = (0, express)();
+let app = express();
 app.use(express.json());
 
 // Hallo sagen
-app.get("/", function (req, res) {
+app.get("/", function (__, res) {
     res.send("Moin!");
 })
 
 // UAVs
-app.get("/uav", function (req, res) {
+app.get("/uav", function (__, res) {
     db.all("SELECT * FROM uav;", (_, rows) => {
         res.send(rows);
     });
@@ -52,7 +52,7 @@ app.post("/uav", function (req, res) {
         req.body.sensorpixelheight
     ], (error, row) => {
         if (error) {
-            if (error.code == 'SQLITE_CONSTRAINT')
+            if (error.name == 'SQLITE_CONSTRAINT')
                 res.sendStatus(409);
             else
                 res.sendStatus(501);
@@ -76,7 +76,7 @@ app.put("/uav/:uav", function (req, res) {
         req.params.uav
     ], (error, row) => {
         if (error) {
-            if (error.code == 'SQLITE_CONSTRAINT')
+            if (error.name == 'SQLITE_CONSTRAINT')
                 res.sendStatus(409);
             else
                 res.sendStatus(501);
@@ -109,9 +109,9 @@ app.post("/projekt", function (req, res) {
         req.body.ausrichtung,
         req.body.aufloesung,
         req.body.hoehenBegrenzung
-    ], (error, row) => {
+    ], (error) => {
         if (error) {
-            if (error.code == 'SQLITE_CONSTRAINT')
+            if (error.name == 'SQLITE_CONSTRAINT')
                 res.sendStatus(409);
             else
                 res.sendStatus(501);
@@ -135,9 +135,9 @@ app.put("/projekt/:projekt", function (req, res) {
         req.body.aufloesung,
         req.body.hoehenBegrenzung,
         req.params.projekt
-    ], (error, row) => {
+    ], (error) => {
         if (error) {
-            if (error.code == 'SQLITE_CONSTRAINT')
+            if (error.name == 'SQLITE_CONSTRAINT')
                 res.sendStatus(409);
             else
                 res.sendStatus(501);
