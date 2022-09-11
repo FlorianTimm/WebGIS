@@ -1,16 +1,16 @@
 import { Color } from "ol/color";
 
 export default abstract class Menu {
-    private div: HTMLElement;
+    private _div: HTMLElement;
 
     constructor(div?: HTMLElement) {
-        this.div = div ?? document.createElement('div');
+        this._div = div ?? document.createElement('div');
     }
 
-    public abstract getName(): string;
-    public abstract getColor(): Color
+    public abstract get name(): string;
+    public abstract get color(): Color
 
-    public getDiv(): HTMLElement {
-        return this.div;
+    public get div(): HTMLElement {
+        return this._div;
     }
 }

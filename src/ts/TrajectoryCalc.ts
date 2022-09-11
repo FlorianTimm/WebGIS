@@ -6,23 +6,23 @@ import UAV from "./UAV";
 import * as math from 'mathjs';
 
 export default class TrajectoryCalc {
-    private _map: Map;
+    private map: Map;
     private _gebiet: Polygon | undefined;
     private _ausrichtung: number = 0;
     private _ueberlappungQuer: number = 0.50;
     private _ueberlappungLaengs: number = 0.50;
     private _aufloesung: number = 0.1;
-    private _distanceQuer: number = 100;
-    private _distanceLaengs: number = 100;
+    private distanceQuer: number = 100;
+    private distanceLaengs: number = 100;
     private _uav: UAV | undefined;
     private _hoeheBegrenzen: boolean = false;
-    private _callback: (hoehe: number, laenge: number, dauer: number, anzahl: number) => void;
-    private _flughoehe: number = 100;
+    private callback: (hoehe: number, laenge: number, dauer: number, anzahl: number) => void;
+    private flughoehe: number = 100;
 
 
     constructor(map: Map, callback: (hoehe: number, laenge: number, dauer: number, anzahl: number) => void) {
-        this._map = map;
-        this._callback = callback;
+        this.map = map;
+        this.callback = callback;
     }
 
     private calculateDistance(): boolean {
@@ -32,24 +32,24 @@ export default class TrajectoryCalc {
         if (this._aufloesung === undefined) return false;
 
         const pixelGroesse = this._uav.sensorSize[0] / this._uav.sensorPixel[0];
-        this._flughoehe = this._uav.focusLength / pixelGroesse * this.aufloesung;
-        if (this._hoeheBegrenzen && this._flughoehe > 120) this._flughoehe = 120;
-        const bildGroesseBoden: [number, number] = [this._uav.sensorSize[1] / this._uav.focusLength * this._flughoehe, this._uav.sensorSize[0] / this._uav.focusLength * this._flughoehe]
-        this._distanceLaengs = bildGroesseBoden[1] * (1 - this._ueberlappungLaengs)
-        this._distanceQuer = bildGroesseBoden[0] * (1 - this._ueberlappungQuer)
+        this.flughoehe = this._uav.focusLength / pixelGroesse * this.aufloesung;
+        if (this._hoeheBegrenzen && this.flughoehe > 120) this.flughoehe = 120;
+        const bildGroesseBoden: [number, number] = [this._uav.sensorSize[1] / this._uav.focusLength * this.flughoehe, this._uav.sensorSize[0] / this._uav.focusLength * this.flughoehe]
+        this.distanceLaengs = bildGroesseBoden[1] * (1 - this._ueberlappungLaengs)
+        this.distanceQuer = bildGroesseBoden[0] * (1 - this._ueberlappungQuer)
 
         //console.log(this._distanceQuer, this._distanceLaengs)
         return true;
     }
 
     private recalcTrajectory() {
-        if (!this.gebiet) return;
-        let geom = <Polygon>this.gebiet.simplify(5);
+        if (!this._gebiet) return;
+        let geom = <Polygon>this._gebiet.simplify(5);
         let anzahlBilder = 0;
         if (!this.calculateDistance()) return;
-        this._map.getTrajectorySource().clear();
+        this.map.trajectorySource.clear();
         let poly4326 = <Polygon>geom.clone().transform('EPSG:3857', 'EPSG:4326');
-        let buff = new Polygon(buffer(polygon(poly4326.getCoordinates()), Math.max(this._distanceQuer, this._distanceLaengs) / 1000, { units: 'kilometers', steps: 1 }).geometry.coordinates);
+        let buff = new Polygon(buffer(polygon(poly4326.getCoordinates()), Math.max(this.distanceQuer, this.distanceLaengs) / 1000, { units: 'kilometers', steps: 1 }).geometry.coordinates);
         //buff.transform('EPSG:4326', 'EPSG:3857');
         //this.map.getTrajectorySource().addFeature(new Feature<LineString>({ geometry: new LineString(buff.getLinearRing(0).getCoordinates()) }))
         let poly = polygon(buff.getCoordinates())
@@ -64,15 +64,15 @@ export default class TrajectoryCalc {
 
         let imgCoords: [number, number][] = []
 
-        for (let i = Math.floor(-maxStrecke / (this._distanceQuer / 1000.)); i < Math.ceil(maxStrecke / (this._distanceQuer / 1000.)) + 1; i++) {
-            let abstand = (i - 0.5) * this._distanceQuer / 1000.
-            let winkel = abstand < 0 ? this.ausrichtung + 180 : this.ausrichtung;
+        for (let i = Math.floor(-maxStrecke / (this.distanceQuer / 1000.)); i < Math.ceil(maxStrecke / (this.distanceQuer / 1000.)) + 1; i++) {
+            let abstand = (i - 0.5) * this.distanceQuer / 1000.
+            let winkel = abstand < 0 ? this._ausrichtung + 180 : this._ausrichtung;
             if (winkel > 180) winkel -= 360;
             abstand = Math.abs(abstand);
 
             let c0 = destination([minx, miny], abstand, winkel)
-            let c1 = destination(c0, maxStrecke, this.ausrichtung < -90 ? this.ausrichtung + 270 : this._ausrichtung - 90)
-            let c2 = destination(c0, maxStrecke, this.ausrichtung < 90 ? this.ausrichtung + 90 : this._ausrichtung - 270)
+            let c1 = destination(c0, maxStrecke, this._ausrichtung < -90 ? this._ausrichtung + 270 : this._ausrichtung - 90)
+            let c2 = destination(c0, maxStrecke, this._ausrichtung < 90 ? this._ausrichtung + 90 : this._ausrichtung - 270)
 
 
             //console.log(c1, c2)
@@ -105,12 +105,12 @@ export default class TrajectoryCalc {
             for (let j = 0; j <= cutArray.length - 1; j += 2) {
                 let line = lineString([cutArray[j], cutArray[j + 1]]);
                 let l = turfLength(line);
-                let versatz = (l % (this._distanceLaengs / 1000)) / 2;
-                for (; versatz < l; versatz += this._distanceLaengs / 1000) {
+                let versatz = (l % (this.distanceLaengs / 1000)) / 2;
+                for (; versatz < l; versatz += this.distanceLaengs / 1000) {
                     let p = along(line, versatz)
                     let c = toMercator(p.geometry.coordinates);
                     imgCoords.push([c[0], c[1]]);
-                    this._map.getTrajectorySource().addFeature(new Feature({ geometry: new Point(c) }));
+                    this.map.trajectorySource.addFeature(new Feature({ geometry: new Point(c) }));
                     anzahlBilder++;
                 }
             }
@@ -120,9 +120,9 @@ export default class TrajectoryCalc {
         //let line = new LineString(lineCoords);
         //this._map.getTrajectorySource().addFeature(new Feature({ geometry: line }))
         let spline = this.createSpline(imgCoords);
-        this._map.getTrajectorySource().addFeature(new Feature({ geometry: spline }))
+        this.map.trajectorySource.addFeature(new Feature({ geometry: spline }))
 
-        this._callback(this._flughoehe, turfLength(toWgs84(lineString(spline.getCoordinates()))), 0, anzahlBilder)
+        this.callback(this.flughoehe, turfLength(toWgs84(lineString(spline.getCoordinates()))), 0, anzahlBilder)
     }
 
 

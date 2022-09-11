@@ -65,7 +65,7 @@ export default class HTML {
 
     static createSelect<T extends object>(parent: HTMLElement, beschriftung: string, liste: Promise<T[]>): HTMLSelectElementArray<T> {
         let select: HTMLSelectElementArray<T> = new HTMLSelectElementArray<T>(liste, parent);
-        HTML.createLabel(beschriftung, select.getHTMLElement(), parent);
+        HTML.createLabel(beschriftung, select.htmlElement, parent);
         return select;
     }
     static createCheckbox(parent: HTMLElement, beschriftung: string, checked = false) {
@@ -82,11 +82,11 @@ export default class HTML {
 }
 
 export class HTMLSelectElementArray<T extends object> {
-    private htmlElement: HTMLSelectElement;
+    private _htmlElement: HTMLSelectElement;
     private array: Promise<T[]>;
 
     constructor(listePromise: Promise<T[]>, parent?: HTMLElement) {
-        this.htmlElement = document.createElement("select");
+        this._htmlElement = document.createElement("select");
 
         this.array = listePromise;
         this.array.then((liste) => {
@@ -94,24 +94,24 @@ export class HTMLSelectElementArray<T extends object> {
         })
 
         if (parent) {
-            parent.appendChild(this.htmlElement);
+            parent.appendChild(this._htmlElement);
         }
     }
 
-    getHTMLElement() {
-        return this.htmlElement;
+    get htmlElement() {
+        return this._htmlElement;
     }
 
     async getSelectedEntry(): Promise<T> {
         let array = await this.array;
-        return array[this.htmlElement.selectedIndex]
+        return array[this._htmlElement.selectedIndex]
     }
 
     async setSelection(vergleich: (element: T) => boolean) {
         let array = await this.array;
         array.forEach((element, index) => {
             if (vergleich(element)) {
-                this.getHTMLElement().selectedIndex = index;
+                this.htmlElement.selectedIndex = index;
                 return;
             }
         });
@@ -119,15 +119,15 @@ export class HTMLSelectElementArray<T extends object> {
 
     async updateListe(liste: T[], preselect?: T) {
         let selected = preselect ?? await this.getSelectedEntry();
-        this.htmlElement.innerHTML = "";
+        this._htmlElement.innerHTML = "";
         liste.forEach((eintrag) => {
             let option = document.createElement('option');
             option.innerHTML = eintrag.toString();
-            this.htmlElement.appendChild(option);
+            this._htmlElement.appendChild(option);
             if (eintrag == selected) {
                 option.selected = true;
             }
         });
-        this.getHTMLElement().dispatchEvent(new Event('change'));
+        this.htmlElement.dispatchEvent(new Event('change'));
     }
 }

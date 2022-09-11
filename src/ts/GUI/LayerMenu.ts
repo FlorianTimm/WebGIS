@@ -19,12 +19,12 @@ export class LayerMenu extends Menu {
         })
     }
 
-    public getName(): string {
+    public get name(): string {
         return "Layer";
     }
 
     private generateLayerOverview() {
-        this.getDiv().innerHTML = "";
+        this.div.innerHTML = "";
         let layer = this.map.getLayers();
         this.layerButton = [];
         layer.forEach((layer) => {
@@ -47,8 +47,8 @@ export class LayerMenu extends Menu {
                     item.layer.setVisible(item.radio.checked)
                 })
             });
-            this.getDiv().appendChild(radioLabel);
-            this.getDiv().appendChild(document.createElement('br'))
+            this.div.appendChild(radioLabel);
+            this.div.appendChild(document.createElement('br'))
             if (layer.getVisible()) {
                 radio.checked = true;
             }
@@ -57,7 +57,7 @@ export class LayerMenu extends Menu {
 
     }
 
-    public getColor(): Color {
+    public get color(): Color {
         return [0, 200, 200]
     }
 

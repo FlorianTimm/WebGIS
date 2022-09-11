@@ -21,15 +21,15 @@ export class Navigation {
     private createSubMenu(index: number) {
         let menu = this.menus[index]
         let name = document.createElement('span');
-        name.innerHTML = menu.getName();
+        name.innerHTML = menu.name;
 
 
-        let subMenuDiv = menu.getDiv();
+        let subMenuDiv = menu.div;
         this.navDiv.appendChild(name)
         this.menuDiv.appendChild(subMenuDiv);
-        name.style.backgroundColor = 'rgb(' + menu.getColor().toString() + ')';
-        subMenuDiv.style.backgroundColor = 'rgb(' + menu.getColor().toString() + ')';
-        console.log(menu.getColor().toString());
+        name.style.backgroundColor = 'rgb(' + menu.color.toString() + ')';
+        subMenuDiv.style.backgroundColor = 'rgb(' + menu.color.toString() + ')';
+        console.log(menu.color.toString());
 
         name.addEventListener("click", () => this.displayMenu(index))
 
@@ -37,8 +37,8 @@ export class Navigation {
 
     private displayMenu(index: number) {
         this.menus.forEach((menu) => {
-            menu.getDiv().style.display = 'none';
+            menu.div.style.display = 'none';
         });
-        this.menus[index].getDiv().style.display = 'block';
+        this.menus[index].div.style.display = 'block';
     }
 }

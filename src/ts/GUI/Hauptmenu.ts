@@ -7,21 +7,19 @@ import { Color } from "ol/color";
 import HTML from "./HTML";
 
 export default class Hauptmenu extends Menu {
-    private _map: Map;
-    private _source: VectorSource
+    private map: Map;
+    private source: VectorSource
     private _zeichnen: Zeichnen;
 
     constructor(map: Map, div?: HTMLElement) {
         super(div);
-        this._map = map;
+        this.map = map;
 
-        this._source = new VectorSource({})
-        let layer = new VectorLayer({ source: this._source })
-        this._map.addLayer(layer)
+        this.source = new VectorSource({})
+        let layer = new VectorLayer({ source: this.source })
+        this.map.addLayer(layer)
 
-        this._zeichnen = new Zeichnen(this._map, this.getDiv());
-
-
+        this._zeichnen = new Zeichnen(this.map, this.div);
 
         let projektName = this.findGetParameter('projekt')
         let linkButtonText = "Link generieren";
@@ -34,17 +32,17 @@ export default class Hauptmenu extends Menu {
         }
 
         let exportDataKML = document.createElement('button');
-        this.getDiv().appendChild(exportDataKML)
+        this.div.appendChild(exportDataKML)
         exportDataKML.addEventListener('click', () => this._zeichnen.exportTrajectory('KML'))
         exportDataKML.innerHTML = "KML"
 
         let exportDataGPX = document.createElement('button');
-        this.getDiv().appendChild(exportDataGPX)
+        this.div.appendChild(exportDataGPX)
         exportDataGPX.addEventListener('click', () => this._zeichnen.exportTrajectory('GPX'))
         exportDataGPX.innerHTML = "GPX"
 
 
-        let linkButton = HTML.createButton(this.getDiv(), linkButtonText)
+        let linkButton = HTML.createButton(this.div, linkButtonText)
         linkButton.addEventListener("click", async () => {
             const requestOptions = {
                 method: 'POST',
@@ -79,11 +77,11 @@ export default class Hauptmenu extends Menu {
 
     }
 
-    public getName(): string {
+    public get name(): string {
         return "Hauptmenü";
     }
 
-    public getColor(): Color {
+    public get color(): Color {
         return [200, 200, 0]
     }
 

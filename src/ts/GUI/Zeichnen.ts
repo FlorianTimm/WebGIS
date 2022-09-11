@@ -40,7 +40,7 @@ export default class Zeichnen extends Draw {
     constructor(map: Map, menuBereich: HTMLElement) {
         super({
             type: 'Polygon',
-            source: map.getZeichenSource()
+            source: map.zeichenSource
         });
         this._map = map;
 
@@ -71,11 +71,11 @@ export default class Zeichnen extends Draw {
         this.setActive(false)
         this._map.addInteraction(this)
 
-        let modify = new Modify({ source: map.getZeichenSource() })
+        let modify = new Modify({ source: map.zeichenSource })
         modify.setActive(true)
         modify.on('modifyend', (event: ModifyEvent) => {
             console.log(<Feature<Polygon>>event.features.getArray()[0])
-            this._gebiet = this._map.getZeichenSource().getFeatures()[0]
+            this._gebiet = this._map.zeichenSource.getFeatures()[0]
             this.gebietUebergeben()
         });
         this._map.addInteraction(modify);
@@ -91,7 +91,7 @@ export default class Zeichnen extends Draw {
         this._ueberlappungLaengsSlider.addEventListener('change', this.ueberlappungLaengsUebergeben.bind(this))
         this._ueberlappungQuerSlider.addEventListener('change', this.ueberlappungQuerUebergeben.bind(this))
         this._aufloesungSlider.addEventListener('change', this.aufloesungUebergeben.bind(this))
-        this._uavSelect.getHTMLElement().addEventListener('change', this.uavUebergeben.bind(this))
+        this._uavSelect.htmlElement.addEventListener('change', this.uavUebergeben.bind(this))
         this._hoeheBegrenzen.addEventListener('change', this.hoehenBegrenzungUebergeben.bind(this))
     }
 
@@ -145,7 +145,7 @@ export default class Zeichnen extends Draw {
     private zeichnen_starten() {
         this._button.value = "Zeichnen abbrechen";
         this.setActive(true);
-        this._map.getZeichenSource().clear();
+        this._map.zeichenSource.clear();
         this._map.setDoubleClickZoom(false);
     }
 
@@ -182,13 +182,13 @@ export default class Zeichnen extends Draw {
         this._uavSelect.setSelection((element) => {
             return element.id == option.uav
         });
-        this._uavSelect.getHTMLElement().dispatchEvent(new Event('change'))
+        this._uavSelect.htmlElement.dispatchEvent(new Event('change'))
 
         if (option.gebiet != '') {
             let format = new WKT();
             let wkt = <Polygon>format.readGeometry(option.gebiet);
             this._gebiet = new Feature(wkt);
-            this._map.getZeichenSource().addFeature(this._gebiet);
+            this._map.zeichenSource.addFeature(this._gebiet);
             this.gebietUebergeben()
             this._map.getView().fit(wkt, {
                 maxZoom: 18,
@@ -209,7 +209,7 @@ export default class Zeichnen extends Draw {
 
     public exportTrajectory(art: 'KML' | 'GPX') {
         console.log("Export")
-        let trajectory = this._map.getTrajectorySource().getFeatures()
+        let trajectory = this._map.trajectorySource.getFeatures()
         let point = trajectory.filter((feature) => {
             let g = feature.getGeometry()
             if (g !== undefined && g.getType() == 'Point') return feature

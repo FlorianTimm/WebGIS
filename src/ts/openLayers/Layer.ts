@@ -15,6 +15,13 @@ import { Options as VectorTileOptionsOl } from "ol/layer/VectorTile";
  * @version 2019-06-05
  * @license GPL-3.0-or-later
 */
+
+export interface LayerSwitcherLayer {
+    name?: string;
+    switchable?: boolean;
+    backgroundLayer?: boolean;
+}
+
 export interface TileOptions<TileSourceType extends TileSource> extends TileOptionsOl<TileSourceType> {
     name?: string;
     switchable?: boolean;
@@ -27,7 +34,7 @@ export interface TileOptions<TileSourceType extends TileSource> extends TileOpti
  * @version 2019-06-05
  * @license GPL-3.0-or-later
 */
-export class TileLayer<TileSourceType extends TileSource> extends Tile<TileSourceType> {
+export class TileLayer<TileSourceType extends TileSource> extends Tile<TileSourceType> implements LayerSwitcherLayer {
     name: string = "";
     switchable: boolean = false;
     backgroundLayer: boolean = false;
@@ -61,7 +68,7 @@ export interface ImageOptions<ImageSourceType extends ImageSource> extends Image
  * @version 2019.06.05
  * @copyright MIT
  */
-export class ImageLayer<ImageSourceType extends ImageSource> extends Image<ImageSourceType> {
+export class ImageLayer<ImageSourceType extends ImageSource> extends Image<ImageSourceType> implements LayerSwitcherLayer {
     name: string = "";
     switchable: boolean = false;
     backgroundLayer: boolean = false;
@@ -95,7 +102,7 @@ export interface VectorOptions<VectorSourceType extends VectorSource<Geometry>> 
  * @version 2019.06.05
  * @copyright MIT
  */
-export class VectorLayer<VectorSourceType extends VectorSource<Geometry>> extends Vector<VectorSourceType> {
+export class VectorLayer<VectorSourceType extends VectorSource<Geometry>> extends Vector<VectorSourceType> implements LayerSwitcherLayer {
     name: string = "";
     switchable: boolean = false;
     backgroundLayer: boolean = false;
@@ -131,7 +138,7 @@ export interface VectorTileOptions extends VectorTileOptionsOl {
  * @version 2022.08.29
  * @copyright MIT
  */
-export class VectorTileLayer extends VectorTile {
+export class VectorTileLayer extends VectorTile implements LayerSwitcherLayer {
     name: string = "";
     switchable: boolean = false;
     backgroundLayer: boolean = false;

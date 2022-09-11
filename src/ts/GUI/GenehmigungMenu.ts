@@ -6,46 +6,43 @@ import VectorTileSource from "ol/source/VectorTile";
 import Zeichnen from "./Zeichnen";
 import { FlugverbotVectorTiles } from "../openLayers/FlugverbotLayer";
 
-//import { feature, point, lineString, booleanDisjoint  } from "@turf/turf";
-//import { Point, LineString } from "ol/geom";
-
 export default class GenehmigungMenu extends Menu {
-    private _flugverbotVectorTilesSource: VectorTileSource | null
-    private _zeichnen: Zeichnen;
-    private _table: HTMLTableElement;
+    private flugverbotVectorTilesSource: VectorTileSource | null
+    private zeichnen: Zeichnen;
+    private table: HTMLTableElement;
 
     constructor(map: Map, zeichnen: Zeichnen) {
         super();
-        let div = this.getDiv();
-        this._zeichnen = zeichnen;
+        let div = this.div;
+        this.zeichnen = zeichnen;
 
-        this._flugverbotVectorTilesSource = map.getFlugverbotVectorTiles().getSource();
+        this.flugverbotVectorTilesSource = map.flugverbotVectorTiles.getSource();
 
         let buttonCheck = HTML.createButton(div, "Prüfen");
         buttonCheck.addEventListener('click', () => this.buttonClicked())
 
-        this._table = document.createElement('table');
-        div.appendChild(this._table);
+        this.table = document.createElement('table');
+        div.appendChild(this.table);
 
         div.addEventListener('mouseleave', () => {
             FlugverbotVectorTiles.selection = undefined;
-            this._flugverbotVectorTilesSource?.changed();
+            this.flugverbotVectorTilesSource?.changed();
         });
     }
 
-    public getName(): string {
+    public get name(): string {
         return "Genehmigung"
     }
-    public getColor(): Color {
+    public get color(): Color {
         return [250, 100, 100]
     }
 
     private buttonClicked() {
 
         let liste: { [key: string]: string } = {};
-        this._table.innerHTML = '';
+        this.table.innerHTML = '';
 
-        let gebiet = this._zeichnen.gebiet;
+        let gebiet = this.zeichnen.gebiet;
         let extent = gebiet?.getGeometry()?.getExtent();
         if (extent === undefined) {
             alert("Kein Gebiet festgelegt!")
@@ -54,7 +51,7 @@ export default class GenehmigungMenu extends Menu {
         //let turfGebiet = feature(gebiet)
 
 
-        let features = this._flugverbotVectorTilesSource?.getFeaturesInExtent(extent);
+        let features = this.flugverbotVectorTilesSource?.getFeaturesInExtent(extent);
         features?.forEach((f) => {
             //let klasse = f.get('klasse');
 
@@ -93,12 +90,12 @@ export default class GenehmigungMenu extends Menu {
             td.appendChild(h5);
             td.appendChild(txt);
             tr.appendChild(td);
-            this._table.appendChild(tr);
+            this.table.appendChild(tr);
 
 
             td.addEventListener('mouseover', () => {
                 FlugverbotVectorTiles.selection = key;
-                this._flugverbotVectorTilesSource?.changed();
+                this.flugverbotVectorTilesSource?.changed();
             });
         };
 

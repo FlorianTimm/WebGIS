@@ -21,13 +21,13 @@ export default class UAV {
     private _maxspeed: number = 19 * 3.6;
     private _curveRadius: number = 0;
 
-    private static uavsPromise: Promise<UAV[]>;
+    private static _uavsPromise: Promise<UAV[]>;
     private _id: number | undefined;
 
-    private static callbacks: ((liste: UAV[]) => void)[] = [];
+    private static _callbacks: ((liste: UAV[]) => void)[] = [];
 
     private constructor(element: UAVdata) {
-        this.id = element.id;
+        this._id = element.id;
         this._name = element.name;
         this._focusLength = element.focuslength ?? 5;
         this._sensorSize = [element.sensorwidth, element.sensorheight];
@@ -38,7 +38,7 @@ export default class UAV {
         this.minspeed = element.minspeed ?? this.minspeed;
     }
 
-    update(element: UAVdata) {
+    public update(element: UAVdata) {
         this._name = element.name ?? this._name;
         this._focusLength = element.focuslength ?? this._focusLength;
         this._sensorSize = [element.sensorwidth ?? this._sensorSize[0], element.sensorheight ?? this._sensorSize[1]];
@@ -81,19 +81,19 @@ export default class UAV {
     }
 
     static async getUAVs(): Promise<UAV[]> {
-        if (UAV.uavsPromise === undefined) {
-            this.uavsPromise = UAV.loadUAVs();
+        if (UAV._uavsPromise === undefined) {
+            this._uavsPromise = UAV.loadUAVs();
         };
-        return this.uavsPromise
+        return this._uavsPromise
     }
 
     public static onChange(callback: (liste: UAV[]) => void) {
-        UAV.callbacks.push(callback)
+        UAV._callbacks.push(callback)
     }
 
     private static informObserver() {
-        UAV.callbacks.forEach(async (callback) => {
-            callback(await UAV.uavsPromise)
+        UAV._callbacks.forEach(async (callback) => {
+            callback(await UAV._uavsPromise)
         });
     }
 

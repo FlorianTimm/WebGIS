@@ -23,8 +23,9 @@ interface NominatimResponse {
     "place_id": number,
     "type": string
 }
+
 export default class LocationSearch extends Control {
-    textbox: HTMLInputElement;
+    private textbox: HTMLInputElement;
     constructor(opt: Option) {
         let div = document.createElement('form');
         super({ element: div });

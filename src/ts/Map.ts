@@ -16,9 +16,9 @@ import WebGLTileLayer from "ol/layer/WebGLTile";
 
 export default class Map extends OpenLayersMap {
 
-    private zeichenSource: VectorSource<Polygon>;
-    private trajectorySource: VectorSource<LineString | Point>;
-    private flugverbotVectorTiles: FlugverbotVectorTiles;
+    private _zeichenSource: VectorSource<Polygon>;
+    private _trajectorySource: VectorSource<LineString | Point>;
+    private _flugverbotVectorTiles: FlugverbotVectorTiles;
 
     constructor() {
 
@@ -113,13 +113,13 @@ export default class Map extends OpenLayersMap {
             ]),
         });
 
-        this.zeichenSource = new VectorSource({});
-        let zeichenLayer = new VectorLayer({ source: this.zeichenSource });
+        this._zeichenSource = new VectorSource({});
+        let zeichenLayer = new VectorLayer({ source: this._zeichenSource });
         this.addLayer(zeichenLayer)
 
-        this.trajectorySource = new VectorSource<LineString | Point>({});
+        this._trajectorySource = new VectorSource<LineString | Point>({});
         let trajectoryLayer = new VectorLayer({
-            source: this.trajectorySource, style: new Style({
+            source: this._trajectorySource, style: new Style({
                 stroke: new Stroke({
                     width: 3,
                     color: '#ff0000'
@@ -137,18 +137,18 @@ export default class Map extends OpenLayersMap {
         this.addLayer(trajectoryLayer);
         this.createDropSupport();
 
-        this.flugverbotVectorTiles = flugverbotVectorTiles;
+        this._flugverbotVectorTiles = flugverbotVectorTiles;
     }
 
-    getZeichenSource() {
-        return this.zeichenSource;
+    public get zeichenSource() {
+        return this._zeichenSource;
     }
 
-    getTrajectorySource() {
-        return this.trajectorySource;
+    public get trajectorySource() {
+        return this._trajectorySource;
     }
 
-    setDoubleClickZoom(b: boolean) {
+    public setDoubleClickZoom(b: boolean) {
         this.getInteractions().forEach((interaction) => {
             if (interaction instanceof DoubleClickZoom) {
                 interaction.setActive(b);
@@ -203,8 +203,8 @@ export default class Map extends OpenLayersMap {
         });
     }
 
-    public getFlugverbotVectorTiles() {
-        return this.flugverbotVectorTiles;
+    public get flugverbotVectorTiles() {
+        return this._flugverbotVectorTiles;
     }
 
 }
