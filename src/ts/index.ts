@@ -1,19 +1,19 @@
-import "../js/import_jquery.js";
+//import "../js/import_jquery.js";
 import '../../node_modules/ol/ol.css'
 import '../style/index.css';
-import Map from "./Map";
-import Hauptmenu from "./GUI/Hauptmenu";
-import { Navigation } from "./GUI/Navigation";
-import { LayerMenu } from "./GUI/LayerMenu";
-import KameraMenu from "./GUI/KameraMenu";
-import GenehmigungMenu from "./GUI/GenehmigungMenu";
+import Map from "./openLayers/Map";
+import Hauptmenu from "./gui/Hauptmenu";
+import { Navigation } from "./gui/Navigation";
+import { LayerMenu } from "./gui/LayerMenu";
+import KameraMenu from "./gui/KameraMenu";
+import GenehmigungMenu from "./gui/GenehmigungMenu";
 
 let map = new Map();
 
 createMenu();
 
 function createMenu() {
-    let navigation = new Navigation($('nav')[0], $('sidebar')[0]);
+    let navigation = new Navigation(document.getElementsByTagName('nav')[0], document.getElementsByTagName('aside')[0]);
 
     // Hauptmenü
     let hm = new Hauptmenu(map);

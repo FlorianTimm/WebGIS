@@ -21,24 +21,15 @@
   "dependencies": {
     "@turf/boolean-disjoint": "^6.5.0",
     "@turf/boolean-intersects": "^6.5.0",
-    "@types/mathjs": "^9.4.2",
+    "@turf/turf": "^6.5.0",
     "mathjs": "^11.1.0",
-    "ol": "^7.1.0",
-    "uuid": "^9.0.0"
+    "ol": "^7.1.0"
   },
   "devDependencies": {
-    "@turf/turf": "^6.5.0",
-    "@types/chosen-js": "^1.8.3",
-    "@types/jquery": "^3.5.14",
-    "@types/jqueryui": "^1.12.16",
-    "chosen-js": "^1.8.7",
+    "@types/mathjs": "^9.4.2",
     "css-loader": "^6.7.1",
     "html-webpack-plugin": "^5.5.0",
-    "jquery": "^3.6.1",
-    "jquery-ui": "^1.13.2",
-    "jquery-ui-bundle": "^1.12.1-migrate",
     "mini-css-extract-plugin": "^2.6.1",
-    "style-loader": "^3.3.1",
     "ts-loader": "^9.3.1",
     "webpack": "^5.74.0",
     "webpack-cli": "^4.10.0",

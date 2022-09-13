@@ -76,7 +76,7 @@ module.exports = {
     },
     allowedHosts: 'thinkpad',
     static: {
-      directory: path.join(__dirname, "app"),
+      directory: path.join(__dirname, "src/static"),
     },
   }
 }
