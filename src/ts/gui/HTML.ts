@@ -21,7 +21,8 @@ export default class HTML {
     }
 
     static createSlider(parent: HTMLElement, beschriftung: string, von: number, bis: number, voreingestellt?: number, takt?: number): HTMLInputElement {
-        let input = document.createElement("input");
+        const div = document.createElement('div');
+        const input = document.createElement("input");
 
         input.setAttribute("type", "range");
         input.value = (voreingestellt ?? 0).toString();
@@ -29,24 +30,24 @@ export default class HTML {
         input.max = (bis ?? 100).toString();
         input.step = (takt ?? 5).toString();
 
-        let wert = document.createElement("span")
+        const wert = document.createElement("output")
         wert.innerHTML = input.value
         input.onchange = () => {
             wert.innerHTML = input.value
         }
 
-        HTML.createLabel(beschriftung, input, parent);
+        HTML.createLabel(beschriftung, input, div);
 
-        parent.appendChild(wert);
-        parent.appendChild(input);
-        parent.appendChild(document.createElement('br'))
+        div.appendChild(wert);
+        div.appendChild(input);
+        parent.appendChild(div)
         return input;
     }
 
     protected static createLabel(beschriftung: string, input: HTMLElement, parent: HTMLElement) {
         let label: HTMLLabelElement = document.createElement("label");
         label.innerHTML = beschriftung;
-        if (input.id == undefined) {
+        if (!input.id) {
             input.id = "input" + beschriftung.replace("\\W", "");
         }
         label.htmlFor = input.id;
@@ -64,8 +65,10 @@ export default class HTML {
     }
 
     static createSelect<T extends object>(parent: HTMLElement, beschriftung: string, liste: Promise<T[]>): HTMLSelectElementArray<T> {
-        let select: HTMLSelectElementArray<T> = new HTMLSelectElementArray<T>(liste, parent);
+
+        let select: HTMLSelectElementArray<T> = new HTMLSelectElementArray<T>(liste);
         HTML.createLabel(beschriftung, select.htmlElement, parent);
+        parent.appendChild(select.htmlElement)
         return select;
     }
     static createCheckbox(parent: HTMLElement, beschriftung: string, checked = false) {

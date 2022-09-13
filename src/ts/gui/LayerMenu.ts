@@ -6,7 +6,7 @@ import Menu from "./Menu";
 
 export class LayerMenu extends Menu {
     private map: Map;
-    private layerButton: { radio: HTMLInputElement, layer: BaseLayer }[]
+    private layerButton: { radio: HTMLInputElement, radioLabel: HTMLLabelElement, layer: BaseLayer }[]
 
     constructor(map: Map, div?: HTMLElement) {
         super(div);
@@ -25,8 +25,24 @@ export class LayerMenu extends Menu {
 
     private generateLayerOverview() {
         this.div.innerHTML = "";
+        this.div.id = 'layerSwitcher'
         let layer = this.map.getLayers();
         this.layerButton = [];
+
+        let backgroundLayer = document.createElement('div');
+        backgroundLayer.id = 'backgroundLayer'
+        let backgroundLayerHeader = document.createElement('h3');
+        backgroundLayerHeader.innerHTML = 'Hintergrund'
+        backgroundLayer.appendChild(backgroundLayerHeader)
+        this.div.appendChild(backgroundLayer);
+
+        let overlayLayer = document.createElement('div');
+        overlayLayer.id = 'overlayLayer';
+        let overlayLayerHeader = document.createElement('h3');
+        overlayLayerHeader.innerHTML = 'Fachdaten'
+        overlayLayer.appendChild(overlayLayerHeader)
+        this.div.appendChild(overlayLayer);
+
         layer.forEach((layer) => {
             if (!layer.get("switchable")) {
                 return
@@ -39,20 +55,29 @@ export class LayerMenu extends Menu {
             if (layer.get("backgroundLayer")) {
                 radio.type = "radio";
                 radio.name = 'backgroundLayer';
+                backgroundLayer.appendChild(radioLabel);
             } else {
                 radio.type = "checkbox";
+                overlayLayer.appendChild(radioLabel);
             }
             radio.addEventListener('change', () => {
                 this.layerButton.forEach((item) => {
                     item.layer.setVisible(item.radio.checked)
+
+                    if (item.radio.checked) {
+                        item.radioLabel.classList.add('checked')
+                    } else {
+                        item.radioLabel.classList.remove('checked')
+                    }
                 })
             });
-            this.div.appendChild(radioLabel);
-            this.div.appendChild(document.createElement('br'))
+
+            //this.div.appendChild(document.createElement('br'))
             if (layer.getVisible()) {
                 radio.checked = true;
+                radioLabel.classList.add('checked')
             }
-            this.layerButton.push({ radio: radio, layer: layer })
+            this.layerButton.push({ radio: radio, radioLabel: radioLabel, layer: layer })
         });
 
     }
