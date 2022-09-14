@@ -36,8 +36,8 @@ export class Navigation {
         nameDiv.addEventListener("click", () => this.displayMenu(nameDiv, index))
 
         if (index == 0) {
-            //nameDiv.classList.add('selected');
-            //menu.activated();
+            nameDiv.classList.add('selected');
+            menu.activated();
         }
 
     }

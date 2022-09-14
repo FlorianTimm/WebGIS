@@ -147,6 +147,13 @@ select {
     width: 90%;
 }
 
+label.checkbox {
+    font-size: 10pt;
+    width: auto;
+    display: block;
+    margin: 10px 2px;
+}
+
 
 @media only screen and (max-width: 30em) {
     body {

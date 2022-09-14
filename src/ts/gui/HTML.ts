@@ -44,7 +44,7 @@ export default class HTML {
         return input;
     }
 
-    protected static createLabel(beschriftung: string, input: HTMLElement, parent: HTMLElement) {
+    protected static createLabel(beschriftung: string, input: HTMLElement, parent: HTMLElement): HTMLLabelElement {
         let label: HTMLLabelElement = document.createElement("label");
         label.innerHTML = beschriftung;
         if (!input.id) {
@@ -52,6 +52,7 @@ export default class HTML {
         }
         label.htmlFor = input.id;
         parent.appendChild(label);
+        return label;
     }
 
     static createNumberInput(parent: HTMLElement, beschriftung: string, voreingestellt?: number, disabled = false): HTMLInputElement {
@@ -76,10 +77,12 @@ export default class HTML {
 
         input.setAttribute("type", "checkbox");
         input.checked = checked;
+        input.style.width = 'inherit'
 
-        HTML.createLabel(beschriftung, input, parent);
+        const label = HTML.createLabel(beschriftung, input, parent);
+        label.insertBefore(input, label.firstChild);
+        label.classList.add('checkbox')
 
-        parent.appendChild(input);
         return input;
     }
 }
