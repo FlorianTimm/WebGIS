@@ -43,7 +43,8 @@ export default class Map extends OpenLayersMap {
                             'FORMAT': 'image/png',
                             'TRANSPARENT': 'false'
                         },
-                        attributions: [lgv]
+                        attributions: [lgv],
+                        crossOrigin: 'Anonymous'
                     })
                 }),
                 new TileLayer({
@@ -58,7 +59,8 @@ export default class Map extends OpenLayersMap {
                             'FORMAT': 'image/jpeg',
                             'TRANSPARENT': 'false'
                         },
-                        attributions: [lgv]
+                        attributions: [lgv],
+                        crossOrigin: 'Anonymous'
                     })
                 }),
                 new TileLayer({
@@ -66,7 +68,9 @@ export default class Map extends OpenLayersMap {
                     switchable: true,
                     backgroundLayer: true,
                     visible: false,
-                    source: new OSM()
+                    source: new OSM({
+                        crossOrigin: 'Anonymous'
+                    })
                 }),
                 new TileLayer({
                     name: "BaseMapDE",
@@ -78,7 +82,8 @@ export default class Map extends OpenLayersMap {
                         params: {
                             'LAYERS': 'de_basemapde_web_raster_grau'
                         },
-                        attributions: [bkg]
+                        attributions: [bkg],
+                        crossOrigin: 'Anonymous'
                     })
                 }),
 
@@ -88,7 +93,8 @@ export default class Map extends OpenLayersMap {
                     source: new TileWMS({
                         url: 'https://geodienste.hamburg.de/HH_WMS_Drohnenflugverbotszonen',
                         params: { 'LAYERS': 'Krankenhaeuser,Flugplaetze,Hubschrauberlandeplaetze' },
-                        attributions: [fhh]
+                        attributions: [fhh],
+                        crossOrigin: 'Anonymous'
                     }),
                 }),
                 flugverbotVectorTiles,
@@ -99,7 +105,8 @@ export default class Map extends OpenLayersMap {
                     source: new ImageWMS({
                         url: 'https://sgx.geodatenzentrum.de/wms_vg250?',
                         params: { 'LAYERS': 'vg250_lan,vg250_rbz,vg250_krs' },
-                        attributions: [bkg]
+                        attributions: [bkg],
+                        crossOrigin: 'Anonymous'
                     }),
                 }),
             ],

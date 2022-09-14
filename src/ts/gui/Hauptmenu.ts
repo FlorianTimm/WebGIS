@@ -5,6 +5,7 @@ import VectorLayer from "ol/layer/Vector";
 import Zeichnen from "./Zeichnen";
 import { Color } from "ol/color";
 import HTML from "./HTML";
+import { PdfExport } from "../control/PdfExport";
 
 export default class Hauptmenu extends Menu {
     private map: Map;
@@ -40,6 +41,11 @@ export default class Hauptmenu extends Menu {
         this.div.appendChild(exportDataGPX)
         exportDataGPX.addEventListener('click', () => this._zeichnen.exportTrajectory('GPX'))
         exportDataGPX.innerHTML = "GPX"
+
+        let exportPDF = document.createElement('button');
+        this.div.appendChild(exportPDF)
+        exportPDF.addEventListener('click', () => { PdfExport.exportPDF(this.map) })
+        exportPDF.innerHTML = "PDF"
 
 
         let linkButton = HTML.createButton(this.div, linkButtonText)
