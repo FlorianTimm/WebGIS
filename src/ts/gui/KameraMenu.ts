@@ -76,5 +76,7 @@ export default class KameraMenu extends Menu {
             sensorpixelwidth: parseInt(this.sensorpixelwidth.value)
         })
     }
-
+    public activated(): void {
+        console.log("Kameramenü aktiviert")
+    }
 }

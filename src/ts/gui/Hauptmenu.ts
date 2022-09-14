@@ -2,7 +2,7 @@ import Menu from "./Menu";
 import Map from "../openLayers/Map";
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
-import Zeichnen from "../control/Zeichnen";
+import Zeichnen from "./Zeichnen";
 import { Color } from "ol/color";
 import HTML from "./HTML";
 
@@ -101,5 +101,9 @@ export default class Hauptmenu extends Menu {
 
     public get zeichnen(): Zeichnen {
         return this._zeichnen;
+    }
+
+    public activated(): void {
+        console.log("Hauptmenü aktiviert")
     }
 }

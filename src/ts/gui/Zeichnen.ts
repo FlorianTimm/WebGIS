@@ -3,9 +3,9 @@ import { Point, Polygon } from "ol/geom";
 import { Draw, Modify } from "ol/interaction";
 import { DrawEvent } from "ol/interaction/Draw";
 import Map from "../openLayers/Map";
-import TrajectoryCalc from "./TrajectoryCalc";
+import TrajectoryCalc from "../control/TrajectoryCalc";
 import UAV from "../entities/UAV";
-import HTML, { HTMLSelectElementArray } from "../gui/HTML";
+import HTML, { HTMLSelectElementArray } from "./HTML";
 import WKT from "ol/format/WKT"
 import { ModifyEvent } from "ol/interaction/Modify";
 import { GPX, KML } from "ol/format";
@@ -44,12 +44,13 @@ export default class Zeichnen extends Draw {
         });
         this._map = map;
 
+        this._button = HTML.createButton(menuBereich, "Gebiet zeichnen");
+
         this._uavSelect = HTML.createSelect(menuBereich, "UAV", UAV.getUAVs());
         UAV.onChange((liste) => {
             this._uavSelect.updateListe(liste);
         })
 
-        this._button = HTML.createButton(menuBereich, "Gebiet zeichnen");
         this._ausrichtungSlider = HTML.createSlider(menuBereich, "Ausrichtung", 0, 360, 0, 5);
         this._aufloesungSlider = HTML.createSlider(menuBereich, "Auflösung [cm/px]", 1, 20, 10, 1);
         this._ueberlappungLaengsSlider = HTML.createSlider(menuBereich, "Überlappung längs [%]", 0, 90, 50, 5);

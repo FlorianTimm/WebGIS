@@ -29,34 +29,48 @@ header {
 
 nav {
     grid-area: nav;
-    -webkit-writing-mode: vertical-rl;
-    writing-mode: vertical-rl;
     color: #000;
 }
 
-nav>span {
-    display: inline-block;
-    width: 99%;
+nav>div {
+    display: block;
+    width: auto;
     padding: 20px 0px;
-    transform: rotate(180deg);
+    border-bottom: 1px solid black;
+    border-right: 1px solid black;
 }
 
-nav>span:hover {
+nav>div.selected {
+    border-right: 0px;
+}
+
+nav>div>span {
+    margin-top: 5px;
+    transform: rotate(180deg);
+    -webkit-writing-mode: vertical-rl;
+    writing-mode: vertical-rl;
+    padding-right: 5px;
+}
+
+nav>div:hover {
     cursor: pointer;
     text-shadow: 0px 0px 5px #0000ff
 }
 
 aside {
     grid-area: aside;
+    grid-auto-flow: row;
     padding: 0;
     margin: 0;
     color: #000;
+    overflow-y: auto;
 }
 
 aside>div {
     height: 100%;
     width: 100%;
     display: none;
+    overflow-x: hidden;
 }
 
 aside>div>* {
@@ -69,7 +83,7 @@ aside div:first-child {
 
 
 h1 {
-
+    text-align: center;
     left: 100px;
     font-family: Arial, Helvetica, sans-serif;
 }
@@ -80,10 +94,6 @@ h4 {
 }
 
 /*Layerswicher*/
-
-#layerSwitcher {
-    padding-top: 5px;
-}
 
 #layerSwitcher h3 {
     margin: 5px 0;
@@ -112,7 +122,7 @@ h4 {
 
 #layerSwitcher>div {
     background-color: rgba(0, 0, 0, 0.2);
-    margin: 0px 3px 5px 3px;
+    margin: 5px 3px 0px 3px;
     padding: 5px 2px;
 }
 
@@ -132,6 +142,35 @@ output {
     float: right;
 }
 
-input {
+input,
+select {
     width: 90%;
+}
+
+
+@media only screen and (max-width: 30em) {
+    body {
+        grid-template-rows: 3em 1fr;
+        grid-template-columns: 2em 0 1fr;
+    }
+
+    body.sidebarVisible {
+        grid-template-columns: 2em 1fr 0;
+    }
+
+    body header h1 {
+        font-size: 15pt;
+        display: none;
+    }
+
+    body header {
+        display: inline-block;
+        margin: 0px;
+        padding: 1em;
+    }
+
+    body.sidebarVisible header h1 {
+        font-size: 15pt;
+        display: inline;
+    }
 }

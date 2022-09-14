@@ -86,4 +86,8 @@ export class LayerMenu extends Menu {
         return [0, 200, 200]
     }
 
+    public activated(): void {
+        console.log("Layermenü aktiviert")
+    }
+
 }

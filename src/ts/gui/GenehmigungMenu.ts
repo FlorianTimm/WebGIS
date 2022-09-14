@@ -3,14 +3,15 @@ import Map from "../openLayers/Map";
 import HTML from "./HTML";
 import Menu from "./Menu";
 import VectorTileSource from "ol/source/VectorTile";
-import Zeichnen from "../control/Zeichnen";
+import Zeichnen from "./Zeichnen";
 import { FlugverbotVectorTiles } from "../openLayers/FlugverbotLayer";
 
 export default class GenehmigungMenu extends Menu {
     private flugverbotVectorTilesSource: VectorTileSource | null
     private zeichnen: Zeichnen;
-    private table: HTMLTableElement;
+    private resultsDiv: HTMLDivElement;
     private map: Map;
+    private buttonCheck: HTMLInputElement;
 
     constructor(map: Map, zeichnen: Zeichnen) {
         super();
@@ -20,11 +21,11 @@ export default class GenehmigungMenu extends Menu {
         this.flugverbotVectorTilesSource = map.flugverbotVectorTiles.getSource();
         this.map = map;
 
-        let buttonCheck = HTML.createButton(div, "Prüfen");
-        buttonCheck.addEventListener('click', () => this.buttonClicked())
+        this.buttonCheck = HTML.createButton(div, "Prüfen");
+        this.buttonCheck.addEventListener('click', () => this.buttonClicked())
 
-        this.table = document.createElement('table');
-        div.appendChild(this.table);
+        this.resultsDiv = document.createElement('div');
+        div.appendChild(this.resultsDiv);
 
         div.addEventListener('mouseleave', () => {
             FlugverbotVectorTiles.selection = undefined;
@@ -47,7 +48,7 @@ export default class GenehmigungMenu extends Menu {
             return;
         }
 
-        this.table.innerHTML = 'Lädt...';
+        this.resultsDiv.innerHTML = 'Lädt...';
         //let turfGebiet = feature(gebiet)
 
 
@@ -59,7 +60,7 @@ export default class GenehmigungMenu extends Menu {
         });
         this.map.once('rendercomplete', () => {
 
-            this.table.innerHTML = '';
+            this.resultsDiv.innerHTML = '';
             let liste: { [key: string]: string } = {};
 
             //this.flugverbotVectorTilesSource?.on('tileloadend', console.log)
@@ -98,24 +99,32 @@ export default class GenehmigungMenu extends Menu {
 
             })
             for (const [key, e] of Object.entries(liste)) {
-                let tr = document.createElement('tr');
-                let td = document.createElement('td');
+                let entryDiv = document.createElement('div');
                 let h5 = document.createElement('h4');
                 h5.innerHTML = key
                 let txt = document.createTextNode(e ?? '')
-                td.appendChild(h5);
-                td.appendChild(txt);
-                tr.appendChild(td);
-                this.table.appendChild(tr);
+                entryDiv.appendChild(h5);
+                entryDiv.appendChild(txt);
+                this.resultsDiv.appendChild(entryDiv);
 
 
-                td.addEventListener('mouseover', () => {
+                entryDiv.addEventListener('mouseover', () => {
                     FlugverbotVectorTiles.selection = key;
                     this.flugverbotVectorTilesSource?.changed();
                 });
             };
 
         })
+    }
+
+    public activated(): void {
+        let gebiet = this.zeichnen.gebiet;
+        let extent = gebiet?.getGeometry()?.getExtent();
+        if (!extent) {
+            this.buttonCheck.disabled = true;
+        } else {
+            this.buttonCheck.disabled = false;
+        }
     }
 
 }

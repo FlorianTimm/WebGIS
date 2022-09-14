@@ -8,7 +8,8 @@ export default abstract class Menu {
     }
 
     public abstract get name(): string;
-    public abstract get color(): Color
+    public abstract get color(): Color;
+    public abstract activated(): void;
 
     public get div(): HTMLElement {
         return this._div;

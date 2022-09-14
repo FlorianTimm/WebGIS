@@ -20,25 +20,43 @@ export class Navigation {
 
     private createSubMenu(index: number) {
         let menu = this.menus[index]
-        let name = document.createElement('span');
-        name.innerHTML = menu.name;
+        let nameDiv = document.createElement('div');
+        const nameSpan = document.createElement('span');
+        nameSpan.innerHTML = menu.name;
+        nameDiv.appendChild(nameSpan);
 
 
         let subMenuDiv = menu.div;
-        this.navDiv.appendChild(name)
+        this.navDiv.appendChild(nameDiv)
         this.menuDiv.appendChild(subMenuDiv);
-        name.style.backgroundColor = 'rgb(' + menu.color.toString() + ')';
+        nameDiv.style.backgroundColor = 'rgb(' + menu.color.toString() + ')';
         subMenuDiv.style.backgroundColor = 'rgb(' + menu.color.toString() + ')';
         console.log(menu.color.toString());
 
-        name.addEventListener("click", () => this.displayMenu(index))
+        nameDiv.addEventListener("click", () => this.displayMenu(nameDiv, index))
+
+        if (index == 0) {
+            //nameDiv.classList.add('selected');
+            //menu.activated();
+        }
 
     }
 
-    private displayMenu(index: number) {
+    private displayMenu(nameDiv: HTMLDivElement, index: number) {
+        if (this.menus[index].div.style.display == 'block' && document.body.classList.contains('sidebarVisible')) {
+            document.body.classList.remove('sidebarVisible');
+        } else {
+            document.body.classList.add('sidebarVisible');
+        }
         this.menus.forEach((menu) => {
             menu.div.style.display = 'none';
         });
+
+        [...this.navDiv.children].forEach((e) => {
+            e.classList.remove('selected');
+        });
         this.menus[index].div.style.display = 'block';
+        this.menus[index].activated();
+        nameDiv.classList.add('selected');
     }
 }
