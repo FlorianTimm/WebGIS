@@ -8,9 +8,21 @@ import HTML from "./HTML";
 import { PdfExport } from "../control/PdfExport";
 
 export default class Hauptmenu extends Menu {
+    private _zeichnen: Zeichnen;
     private map: Map;
     private source: VectorSource
-    private _zeichnen: Zeichnen;
+
+    public get color(): Color {
+        return [200, 200, 0]
+    }
+
+    public get name(): string {
+        return "Hauptmenü";
+    }
+
+    public get zeichnen(): Zeichnen {
+        return this._zeichnen;
+    }
 
     constructor(map: Map, div?: HTMLElement) {
         super(div);
@@ -83,14 +95,6 @@ export default class Hauptmenu extends Menu {
 
     }
 
-    public get name(): string {
-        return "Hauptmenü";
-    }
-
-    public get color(): Color {
-        return [200, 200, 0]
-    }
-
     private findGetParameter(parameterName: string): string | null {
         // Source: https://stackoverflow.com/questions/5448545/how-to-retrieve-get-parameters-from-javascript
         let result: string | null = null,
@@ -103,10 +107,6 @@ export default class Hauptmenu extends Menu {
                 if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
             });
         return result;
-    }
-
-    public get zeichnen(): Zeichnen {
-        return this._zeichnen;
     }
 
     public activated(): void {

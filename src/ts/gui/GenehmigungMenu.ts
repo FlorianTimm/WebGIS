@@ -7,11 +7,19 @@ import Zeichnen from "./Zeichnen";
 import { FlugverbotVectorTiles } from "../openLayers/FlugverbotLayer";
 
 export default class GenehmigungMenu extends Menu {
-    private flugverbotVectorTilesSource: VectorTileSource | null
-    private zeichnen: Zeichnen;
-    private resultsDiv: HTMLDivElement;
-    private map: Map;
     private buttonCheck: HTMLInputElement;
+    private flugverbotVectorTilesSource: VectorTileSource | null
+    private map: Map;
+    private resultsDiv: HTMLDivElement;
+    private zeichnen: Zeichnen;
+
+    public get color(): Color {
+        return [250, 100, 100]
+    }
+
+    public get name(): string {
+        return "Genehmigung"
+    }
 
     constructor(map: Map, zeichnen: Zeichnen) {
         super();
@@ -31,13 +39,6 @@ export default class GenehmigungMenu extends Menu {
             FlugverbotVectorTiles.selection = undefined;
             this.flugverbotVectorTilesSource?.changed();
         });
-    }
-
-    public get name(): string {
-        return "Genehmigung"
-    }
-    public get color(): Color {
-        return [250, 100, 100]
     }
 
     private buttonClicked() {

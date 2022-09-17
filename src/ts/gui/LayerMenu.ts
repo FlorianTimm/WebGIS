@@ -5,8 +5,16 @@ import { ObjectEvent } from "ol/Object";
 import Menu from "./Menu";
 
 export class LayerMenu extends Menu {
-    private map: Map;
     private layerButton: { radio: HTMLInputElement, radioLabel: HTMLLabelElement, layer: BaseLayer }[]
+    private map: Map;
+
+    public get color(): Color {
+        return [0, 200, 200]
+    }
+
+    public get name(): string {
+        return "Layer";
+    }
 
     constructor(map: Map, div?: HTMLElement) {
         super(div);
@@ -17,10 +25,6 @@ export class LayerMenu extends Menu {
             console.log('Layer changed');
             console.log(event);
         })
-    }
-
-    public get name(): string {
-        return "Layer";
     }
 
     private generateLayerOverview() {
@@ -80,10 +84,6 @@ export class LayerMenu extends Menu {
             this.layerButton.push({ radio: radio, radioLabel: radioLabel, layer: layer })
         });
 
-    }
-
-    public get color(): Color {
-        return [0, 200, 200]
     }
 
     public activated(): void {

@@ -7,39 +7,9 @@ import MVT from 'ol/format/MVT';
 export class FlugverbotVectorTiles extends VectorTileLayer {
     private static _selection: string | undefined;
 
-    constructor() {
-        let basemap = '&copy; basemap.de / BKG September 2022'
-
-        let vectorTilesFlugverbotSource = new VectorTileSource({
-            attributions: basemap,
-            format: new MVT({
-                layers: ['Verkehrslinie', 'Siedlungsflaeche', 'Verkehrsflaeche', 'Grenze_Flaeche', 'Versorgungslinie', 'Gewaesserflaeche', 'Bauwerkspunkt']
-            }),
-            url:
-                'https://sgx.geodatenzentrum.de/gdz_basemapde_vektor/tiles/v1/bm_web_de_3857/{z}/{x}/{y}.pbf',
-        })
-
-        super({
-
-            name: "Flugverbotszonen (BKG VectorTiles)",
-            switchable: true,
-            backgroundLayer: false,
-            visible: true,
-            opacity: 0.5,
-            source: vectorTilesFlugverbotSource,
-            style: (feature: FeatureLike, nr: number) => {
-                return FlugverbotVectorTiles.featureFilter(feature, nr).style
-            },
-        });
-    }
-
     public static get selection(): string | undefined {
         return FlugverbotVectorTiles._selection;
     }
-    public static set selection(value: string | undefined) {
-        FlugverbotVectorTiles._selection = value;
-    }
-
 
     static featureFilter(feature: Feature | FeatureLike, nr: number = 100): { style: Style[], title: string, text?: string } {
         let r: { style: Style[], title: string, text?: string } = { style: [], title: '' };
@@ -298,6 +268,36 @@ export class FlugverbotVectorTiles extends VectorTileLayer {
         }
 
         return r;
+    }
+
+    constructor() {
+        let basemap = '&copy; basemap.de / BKG September 2022'
+
+        let vectorTilesFlugverbotSource = new VectorTileSource({
+            attributions: basemap,
+            format: new MVT({
+                layers: ['Verkehrslinie', 'Siedlungsflaeche', 'Verkehrsflaeche', 'Grenze_Flaeche', 'Versorgungslinie', 'Gewaesserflaeche', 'Bauwerkspunkt']
+            }),
+            url:
+                'https://sgx.geodatenzentrum.de/gdz_basemapde_vektor/tiles/v1/bm_web_de_3857/{z}/{x}/{y}.pbf',
+        })
+
+        super({
+
+            name: "Flugverbotszonen (BKG VectorTiles)",
+            switchable: true,
+            backgroundLayer: false,
+            visible: true,
+            opacity: 0.5,
+            source: vectorTilesFlugverbotSource,
+            style: (feature: FeatureLike, nr: number) => {
+                return FlugverbotVectorTiles.featureFilter(feature, nr).style
+            },
+        });
+    }
+
+    public static set selection(value: string | undefined) {
+        FlugverbotVectorTiles._selection = value;
     }
 }
 

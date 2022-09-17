@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import { Image, Tile, Vector, VectorTile } from "ol/layer";
+import { Image, Layer, Tile, Vector, VectorTile } from "ol/layer";
 import { Vector as VectorSource, Image as ImageSource } from "ol/source";
-import { Options as ImageOptionsOl } from "ol/layer/BaseImage";
-import { Options as TileOptionsOl } from "ol/layer/BaseTile";
-import { Options as VectorOptionsOl } from "ol/layer/BaseVector";
+import { Options as ImageOptions } from "ol/layer/BaseImage";
+import { Options as TileOptions } from "ol/layer/BaseTile";
+import { Options as VectorOptions } from "ol/layer/BaseVector";
 import TileSource from "ol/source/Tile";
 import { Geometry } from "ol/geom";
-import { Options as VectorTileOptionsOl } from "ol/layer/VectorTile";
+import { Options as VectorTileOptions } from "ol/layer/VectorTile";
 
 /**
  * OpenLayers: Interface TileOptions
@@ -16,17 +16,15 @@ import { Options as VectorTileOptionsOl } from "ol/layer/VectorTile";
  * @license GPL-3.0-or-later
 */
 
-export interface LayerSwitcherLayer {
+interface LayerSwitcherLayerOptions {
     name?: string;
     switchable?: boolean;
     backgroundLayer?: boolean;
 }
 
-export interface TileOptions<TileSourceType extends TileSource> extends TileOptionsOl<TileSourceType> {
-    name?: string;
-    switchable?: boolean;
-    backgroundLayer?: boolean;
+export interface LayerSwitcherLayer extends LayerSwitcherLayerOptions, Layer {
 }
+
 
 /**
  * OpenLayers: TileLayer
@@ -35,11 +33,10 @@ export interface TileOptions<TileSourceType extends TileSource> extends TileOpti
  * @license GPL-3.0-or-later
 */
 export class TileLayer<TileSourceType extends TileSource> extends Tile<TileSourceType> implements LayerSwitcherLayer {
+    backgroundLayer: boolean = false;
     name: string = "";
     switchable: boolean = false;
-    backgroundLayer: boolean = false;
-
-    constructor(option: TileOptions<TileSourceType>) {
+    constructor(option: TileOptions<TileSourceType> & LayerSwitcherLayerOptions) {
         super(option);
         if (option.name != undefined)
             this.name = option.name;
@@ -50,17 +47,6 @@ export class TileLayer<TileSourceType extends TileSource> extends Tile<TileSourc
     }
 }
 
-/**
- * OpenLayers: Interface ImageOptions
- * @author Florian Timm, LGV HH 
- * @version 2019.06.05
- * @copyright MIT
- */
-export interface ImageOptions<ImageSourceType extends ImageSource> extends ImageOptionsOl<ImageSourceType> {
-    name?: string;
-    switchable?: boolean;
-    backgroundLayer?: boolean;
-}
 
 /**
  * OpenLayers: ImageLayer
@@ -69,11 +55,10 @@ export interface ImageOptions<ImageSourceType extends ImageSource> extends Image
  * @copyright MIT
  */
 export class ImageLayer<ImageSourceType extends ImageSource> extends Image<ImageSourceType> implements LayerSwitcherLayer {
+    backgroundLayer: boolean = false;
     name: string = "";
     switchable: boolean = false;
-    backgroundLayer: boolean = false;
-
-    constructor(option: ImageOptions<ImageSourceType>) {
+    constructor(option: ImageOptions<ImageSourceType> & LayerSwitcherLayerOptions) {
         super(option);
         if (option.name != undefined)
             this.name = option.name;
@@ -82,18 +67,6 @@ export class ImageLayer<ImageSourceType extends ImageSource> extends Image<Image
         if (option.backgroundLayer != undefined)
             this.backgroundLayer = option.backgroundLayer;
     }
-}
-
-/**
- * OpenLayers: Interface VectorOptions
- * @author Florian Timm, LGV HH 
- * @version 2019.06.05
- * @copyright MIT
- */
-export interface VectorOptions<VectorSourceType extends VectorSource<Geometry>> extends VectorOptionsOl<VectorSourceType> {
-    name?: string;
-    switchable?: boolean;
-    backgroundLayer: boolean;
 }
 
 /**
@@ -103,11 +76,10 @@ export interface VectorOptions<VectorSourceType extends VectorSource<Geometry>> 
  * @copyright MIT
  */
 export class VectorLayer<VectorSourceType extends VectorSource<Geometry>> extends Vector<VectorSourceType> implements LayerSwitcherLayer {
+    backgroundLayer: boolean = false;
     name: string = "";
     switchable: boolean = false;
-    backgroundLayer: boolean = false;
-
-    constructor(option: VectorOptions<VectorSourceType>) {
+    constructor(option: VectorOptions<VectorSourceType> & LayerSwitcherLayerOptions) {
         super(option);
         if (option.name != undefined)
             this.name = option.name;
@@ -118,20 +90,6 @@ export class VectorLayer<VectorSourceType extends VectorSource<Geometry>> extend
     }
 }
 
-
-
-/**
- * OpenLayers: Interface VectorOptions
- * @author Florian Timm, LGV HH 
- * @version 2019.06.05
- * @copyright MIT
- */
-export interface VectorTileOptions extends VectorTileOptionsOl {
-    name?: string;
-    switchable?: boolean;
-    backgroundLayer: boolean;
-}
-
 /**
  * OpenLayers: VectorLayer
  * @author Florian Timm, LGV HH 
@@ -139,11 +97,10 @@ export interface VectorTileOptions extends VectorTileOptionsOl {
  * @copyright MIT
  */
 export class VectorTileLayer extends VectorTile implements LayerSwitcherLayer {
+    backgroundLayer: boolean = false;
     name: string = "";
     switchable: boolean = false;
-    backgroundLayer: boolean = false;
-
-    constructor(option: VectorTileOptions) {
+    constructor(option: VectorTileOptions & LayerSwitcherLayerOptions) {
         super(option);
         if (option.name != undefined)
             this.name = option.name;

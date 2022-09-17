@@ -6,19 +6,26 @@ import UAV from "../entities/UAV";
 import * as math from 'mathjs';
 
 export default class TrajectoryCalc {
-    private map: Map;
-    private _gebiet: Polygon | undefined;
-    private _ausrichtung: number = 0;
-    private _ueberlappungQuer: number = 0.50;
-    private _ueberlappungLaengs: number = 0.50;
     private _aufloesung: number = 0.1;
-    private distanceQuer: number = 100;
-    private distanceLaengs: number = 100;
-    private _uav: UAV | undefined;
+    private _ausrichtung: number = 0;
+    private _gebiet: Polygon | undefined;
     private _hoeheBegrenzen: boolean = false;
+    private _uav: UAV | undefined;
+    private _ueberlappungLaengs: number = 0.50;
+    private _ueberlappungQuer: number = 0.50;
     private callback: (hoehe: number, laenge: number, dauer: number, anzahl: number) => void;
+    private distanceLaengs: number = 100;
+    private distanceQuer: number = 100;
     private flughoehe: number = 100;
+    private map: Map;
 
+    public get aufloesung(): number {
+        return this._aufloesung;
+    }
+
+    public get ausrichtung(): number {
+        return this._ausrichtung;
+    }
 
     constructor(map: Map, callback: (hoehe: number, laenge: number, dauer: number, anzahl: number) => void) {
         this.map = map;
@@ -170,9 +177,7 @@ export default class TrajectoryCalc {
         this.recalcTrajectory();
         console.log("Neue Geometrie")
     }
-    public get ausrichtung(): number {
-        return this._ausrichtung;
-    }
+
     public set ausrichtung(value: number) {
         if (this._ausrichtung == value) return;
         if (value < 0 || value > 360) {
@@ -189,9 +194,7 @@ export default class TrajectoryCalc {
         this._ueberlappungQuer = value;
         this.recalcTrajectory();
     }
-    public get aufloesung(): number {
-        return this._aufloesung;
-    }
+
     public set aufloesung(value: number) {
         if (this._aufloesung == value) return;
         this._aufloesung = value;

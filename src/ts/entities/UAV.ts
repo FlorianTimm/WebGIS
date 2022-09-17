@@ -12,19 +12,85 @@ export interface UAVdata {
 }
 
 export default class UAV {
-
-    private _name: string;
-    private _focusLength: number;
-    private _sensorSize: [number, number];
-    private _sensorPixel: [number, number];
-    private _minspeed: number = 0;
-    private _maxspeed: number = 19 * 3.6;
-    private _curveRadius: number = 0;
-
-    private static _uavsPromise: Promise<UAV[]>;
-    private _id: number | undefined;
-
     private static _callbacks: ((liste: UAV[]) => void)[] = [];
+    private static _uavsPromise: Promise<UAV[]>;
+
+    private static informObserver() {
+        UAV._callbacks.forEach(async (callback) => {
+            callback(await UAV._uavsPromise)
+        });
+    }
+
+    private static async loadUAVs(): Promise<UAV[]> {
+        return fetch('/api/uav')
+            .then((req) => {
+                if (req.status != 200)
+                    return fetch('/uav.json')
+                return req;
+            })
+            .then(req => req.json())
+            .then((json) => {
+                let uavs: UAV[] = [];
+                json.forEach((element: UAVdata) => {
+                    uavs.push(new UAV(element));
+                    UAV.informObserver();
+                });
+                return uavs;
+            })
+
+    }
+
+    public static createUAV(data: UAVdata): Promise<UAV> {
+        return fetch('/api/uav', {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8'
+            },
+        })
+            .then(req => {
+                if (req.status != 201) {
+                    if (req.status == 409) {
+                        alert("Konnte Datensatz nicht einfügen (Namenskonflikt)")
+                    } else {
+                        alert("Fehler beim Einfügen!")
+                    }
+                    return Promise.reject();
+                }
+                return req
+            })
+            .then(req => req.json())
+            .then(async (json: UAVdata) => {
+                let uav = new UAV(json);
+                (await this.getUAVs()).push(uav)
+                UAV.informObserver();
+                return uav;
+            })
+    }
+
+    static async getUAVs(): Promise<UAV[]> {
+        if (UAV._uavsPromise === undefined) {
+            this._uavsPromise = UAV.loadUAVs();
+        };
+        return this._uavsPromise
+    }
+
+    public static onChange(callback: (liste: UAV[]) => void) {
+        UAV._callbacks.push(callback)
+    }
+
+    private _curveRadius: number = 0;
+    private _focusLength: number;
+    private _id: number | undefined;
+    private _maxspeed: number = 19 * 3.6;
+    private _minspeed: number = 0;
+    private _name: string;
+    private _sensorPixel: [number, number];
+    private _sensorSize: [number, number];
+
+    public get curveRadius(): number {
+        return this._curveRadius;
+    }
 
     private constructor(element: UAVdata) {
         this._id = element.id;
@@ -80,72 +146,6 @@ export default class UAV {
             })
     }
 
-    static async getUAVs(): Promise<UAV[]> {
-        if (UAV._uavsPromise === undefined) {
-            this._uavsPromise = UAV.loadUAVs();
-        };
-        return this._uavsPromise
-    }
-
-    public static onChange(callback: (liste: UAV[]) => void) {
-        UAV._callbacks.push(callback)
-    }
-
-    private static informObserver() {
-        UAV._callbacks.forEach(async (callback) => {
-            callback(await UAV._uavsPromise)
-        });
-    }
-
-
-    public static createUAV(data: UAVdata): Promise<UAV> {
-        return fetch('/api/uav', {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: {
-                'Content-Type': 'application/json; charset=utf-8'
-            },
-        })
-            .then(req => {
-                if (req.status != 201) {
-                    if (req.status == 409) {
-                        alert("Konnte Datensatz nicht einfügen (Namenskonflikt)")
-                    } else {
-                        alert("Fehler beim Einfügen!")
-                    }
-                    return Promise.reject();
-                }
-                return req
-            })
-            .then(req => req.json())
-            .then(async (json: UAVdata) => {
-                let uav = new UAV(json);
-                (await this.getUAVs()).push(uav)
-                UAV.informObserver();
-                return uav;
-            })
-    }
-
-
-    private static async loadUAVs(): Promise<UAV[]> {
-        return fetch('/api/uav')
-            .then((req) => {
-                if (req.status != 200)
-                    return fetch('/uav.json')
-                return req;
-            })
-            .then(req => req.json())
-            .then((json) => {
-                let uavs: UAV[] = [];
-                json.forEach((element: UAVdata) => {
-                    uavs.push(new UAV(element));
-                    UAV.informObserver();
-                });
-                return uavs;
-            })
-
-    }
-
     public toString() {
         return this._name;
     }
@@ -187,9 +187,7 @@ export default class UAV {
         this._maxspeed = value;
         UAV.informObserver();
     }
-    public get curveRadius(): number {
-        return this._curveRadius;
-    }
+
     public set curveRadius(value: number) {
         this._curveRadius = value;
         UAV.informObserver();

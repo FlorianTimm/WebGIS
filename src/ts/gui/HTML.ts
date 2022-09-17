@@ -1,4 +1,14 @@
 export default class HTML {
+    protected static createLabel(beschriftung: string, input: HTMLElement, parent: HTMLElement): HTMLLabelElement {
+        let label: HTMLLabelElement = document.createElement("label");
+        label.innerHTML = beschriftung;
+        if (!input.id) {
+            input.id = "input" + beschriftung.replace("\\W", "");
+        }
+        label.htmlFor = input.id;
+        parent.appendChild(label);
+        return label;
+    }
 
     static createButton(parent: HTMLElement, beschriftung: string): HTMLInputElement {
         let button = document.createElement("input");
@@ -6,6 +16,20 @@ export default class HTML {
         button.value = beschriftung;
         parent.appendChild(button);
         return button;
+    }
+
+    static createCheckbox(parent: HTMLElement, beschriftung: string, checked = false) {
+        let input = document.createElement("input");
+
+        input.setAttribute("type", "checkbox");
+        input.checked = checked;
+        input.style.width = 'inherit'
+
+        const label = HTML.createLabel(beschriftung, input, parent);
+        label.insertBefore(input, label.firstChild);
+        label.classList.add('checkbox')
+
+        return input;
     }
 
     static createInput(parent: HTMLElement, beschriftung: string, voreingestellt?: string, disabled = false): HTMLInputElement {
@@ -18,6 +42,24 @@ export default class HTML {
         parent.appendChild(input);
         parent.appendChild(document.createElement('br'))
         return input;
+    }
+
+    static createNumberInput(parent: HTMLElement, beschriftung: string, voreingestellt?: number, disabled = false): HTMLInputElement {
+        let voreingestelltString: string | undefined = undefined;
+        if (voreingestellt) {
+            voreingestelltString = voreingestellt.toString();
+        }
+        let intInput = HTML.createInput(parent, beschriftung, voreingestelltString, disabled);
+        intInput.setAttribute("type", "number");
+        return intInput;
+    }
+
+    static createSelect<T extends object>(parent: HTMLElement, beschriftung: string, liste: Promise<T[]>): HTMLSelectElementArray<T> {
+
+        let select: HTMLSelectElementArray<T> = new HTMLSelectElementArray<T>(liste);
+        HTML.createLabel(beschriftung, select.htmlElement, parent);
+        parent.appendChild(select.htmlElement)
+        return select;
     }
 
     static createSlider(parent: HTMLElement, beschriftung: string, von: number, bis: number, voreingestellt?: number, takt?: number): HTMLInputElement {
@@ -43,53 +85,15 @@ export default class HTML {
         parent.appendChild(div)
         return input;
     }
-
-    protected static createLabel(beschriftung: string, input: HTMLElement, parent: HTMLElement): HTMLLabelElement {
-        let label: HTMLLabelElement = document.createElement("label");
-        label.innerHTML = beschriftung;
-        if (!input.id) {
-            input.id = "input" + beschriftung.replace("\\W", "");
-        }
-        label.htmlFor = input.id;
-        parent.appendChild(label);
-        return label;
-    }
-
-    static createNumberInput(parent: HTMLElement, beschriftung: string, voreingestellt?: number, disabled = false): HTMLInputElement {
-        let voreingestelltString: string | undefined = undefined;
-        if (voreingestellt) {
-            voreingestelltString = voreingestellt.toString();
-        }
-        let intInput = HTML.createInput(parent, beschriftung, voreingestelltString, disabled);
-        intInput.setAttribute("type", "number");
-        return intInput;
-    }
-
-    static createSelect<T extends object>(parent: HTMLElement, beschriftung: string, liste: Promise<T[]>): HTMLSelectElementArray<T> {
-
-        let select: HTMLSelectElementArray<T> = new HTMLSelectElementArray<T>(liste);
-        HTML.createLabel(beschriftung, select.htmlElement, parent);
-        parent.appendChild(select.htmlElement)
-        return select;
-    }
-    static createCheckbox(parent: HTMLElement, beschriftung: string, checked = false) {
-        let input = document.createElement("input");
-
-        input.setAttribute("type", "checkbox");
-        input.checked = checked;
-        input.style.width = 'inherit'
-
-        const label = HTML.createLabel(beschriftung, input, parent);
-        label.insertBefore(input, label.firstChild);
-        label.classList.add('checkbox')
-
-        return input;
-    }
 }
 
 export class HTMLSelectElementArray<T extends object> {
     private _htmlElement: HTMLSelectElement;
     private array: Promise<T[]>;
+
+    get htmlElement() {
+        return this._htmlElement;
+    }
 
     constructor(listePromise: Promise<T[]>, parent?: HTMLElement) {
         this._htmlElement = document.createElement("select");
@@ -102,10 +106,6 @@ export class HTMLSelectElementArray<T extends object> {
         if (parent) {
             parent.appendChild(this._htmlElement);
         }
-    }
-
-    get htmlElement() {
-        return this._htmlElement;
     }
 
     async getSelectedEntry(): Promise<T> {

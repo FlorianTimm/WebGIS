@@ -4,13 +4,21 @@ import HTML, { HTMLSelectElementArray } from "./HTML";
 import Menu from "./Menu";
 
 export default class KameraMenu extends Menu {
-    private uavSelect: HTMLSelectElementArray<UAV>;
-    private uavName: HTMLInputElement;
     private focusLength: HTMLInputElement;
-    private sensorwidth: HTMLInputElement;
     private sensorheight: HTMLInputElement;
-    private sensorpixelwidth: HTMLInputElement;
     private sensorpixelheight: HTMLInputElement;
+    private sensorpixelwidth: HTMLInputElement;
+    private sensorwidth: HTMLInputElement;
+    private uavName: HTMLInputElement;
+    private uavSelect: HTMLSelectElementArray<UAV>;
+
+    public get color(): Color {
+        return [200, 0, 200]
+    }
+
+    public get name(): string {
+        return "UAV";
+    }
 
     constructor(div?: HTMLElement) {
         super(div);
@@ -36,22 +44,15 @@ export default class KameraMenu extends Menu {
         this.uavSelect.htmlElement.addEventListener('change', () => this.uavChange())
     }
 
-    public get name(): string {
-        return "UAV";
-    }
-
-    public get color(): Color {
-        return [200, 0, 200]
-    }
-
-    private async uavChange() {
-        const entry = await this.uavSelect.getSelectedEntry()
-        this.uavName.value = entry.name;
-        this.focusLength.value = entry.focusLength.toString()
-        this.sensorheight.value = entry.sensorSize[1].toString();
-        this.sensorwidth.value = entry.sensorSize[0].toString();
-        this.sensorpixelheight.value = entry.sensorPixel[1].toString();
-        this.sensorpixelwidth.value = entry.sensorPixel[0].toString();
+    private neuesUAV() {
+        UAV.createUAV({
+            name: this.uavName.value,
+            focuslength: parseFloat(this.focusLength.value),
+            sensorheight: parseFloat(this.sensorheight.value),
+            sensorwidth: parseFloat(this.sensorwidth.value),
+            sensorpixelheight: parseInt(this.sensorpixelheight.value),
+            sensorpixelwidth: parseInt(this.sensorpixelwidth.value)
+        })
     }
 
     private async uavAendern() {
@@ -66,16 +67,16 @@ export default class KameraMenu extends Menu {
         })
     }
 
-    private neuesUAV() {
-        UAV.createUAV({
-            name: this.uavName.value,
-            focuslength: parseFloat(this.focusLength.value),
-            sensorheight: parseFloat(this.sensorheight.value),
-            sensorwidth: parseFloat(this.sensorwidth.value),
-            sensorpixelheight: parseInt(this.sensorpixelheight.value),
-            sensorpixelwidth: parseInt(this.sensorpixelwidth.value)
-        })
+    private async uavChange() {
+        const entry = await this.uavSelect.getSelectedEntry()
+        this.uavName.value = entry.name;
+        this.focusLength.value = entry.focusLength.toString()
+        this.sensorheight.value = entry.sensorSize[1].toString();
+        this.sensorwidth.value = entry.sensorSize[0].toString();
+        this.sensorpixelheight.value = entry.sensorPixel[1].toString();
+        this.sensorpixelwidth.value = entry.sensorPixel[0].toString();
     }
+
     public activated(): void {
         console.log("Kameramenü aktiviert")
     }

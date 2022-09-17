@@ -15,10 +15,21 @@ import { FlugverbotVectorTiles } from "./FlugverbotLayer";
 import WebGLTileLayer from "ol/layer/WebGLTile";
 
 export default class Map extends OpenLayersMap {
-
-    private _zeichenSource: VectorSource<Polygon>;
-    private _trajectorySource: VectorSource<LineString | Point>;
     private _flugverbotVectorTiles: FlugverbotVectorTiles;
+    private _trajectorySource: VectorSource<LineString | Point>;
+    private _zeichenSource: VectorSource<Polygon>;
+
+    public get flugverbotVectorTiles() {
+        return this._flugverbotVectorTiles;
+    }
+
+    public get trajectorySource() {
+        return this._trajectorySource;
+    }
+
+    public get zeichenSource() {
+        return this._zeichenSource;
+    }
 
     constructor() {
 
@@ -147,24 +158,7 @@ export default class Map extends OpenLayersMap {
         this._flugverbotVectorTiles = flugverbotVectorTiles;
     }
 
-    public get zeichenSource() {
-        return this._zeichenSource;
-    }
-
-    public get trajectorySource() {
-        return this._trajectorySource;
-    }
-
-    public setDoubleClickZoom(b: boolean) {
-        this.getInteractions().forEach((interaction) => {
-            if (interaction instanceof DoubleClickZoom) {
-                interaction.setActive(b);
-            }
-        });
-    }
-
-
-    createDropSupport() {
+    private createDropSupport() {
         let dropArea = this.getTargetElement();
 
 
@@ -210,8 +204,11 @@ export default class Map extends OpenLayersMap {
         });
     }
 
-    public get flugverbotVectorTiles() {
-        return this._flugverbotVectorTiles;
+    public setDoubleClickZoom(b: boolean) {
+        this.getInteractions().forEach((interaction) => {
+            if (interaction instanceof DoubleClickZoom) {
+                interaction.setActive(b);
+            }
+        });
     }
-
 }

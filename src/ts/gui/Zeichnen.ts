@@ -22,20 +22,24 @@ type Config = {
 }
 
 export default class Zeichnen extends Draw {
-    private _button: HTMLInputElement;
-    private _ausrichtungSlider: HTMLInputElement;
-    private _map: Map;
-    private _tc: TrajectoryCalc;
-    private _gebiet: Feature<Polygon> | undefined;
-    private _ueberlappungLaengsSlider: HTMLInputElement;
-    private _ueberlappungQuerSlider: HTMLInputElement;
     private _aufloesungSlider: HTMLInputElement;
-    private _uavSelect: HTMLSelectElementArray<UAV>;
-    private _hoeheBegrenzen: HTMLInputElement;
+    private _ausrichtungSlider: HTMLInputElement;
+    private _bildAnzahlInput: HTMLInputElement;
+    private _button: HTMLInputElement;
+    private _flugDauerInput: HTMLInputElement;
     private _flugHoeheInput: HTMLInputElement;
     private _flugLaengeInput: HTMLInputElement;
-    private _flugDauerInput: HTMLInputElement;
-    private _bildAnzahlInput: HTMLInputElement;
+    private _gebiet: Feature<Polygon> | undefined;
+    private _hoeheBegrenzen: HTMLInputElement;
+    private _map: Map;
+    private _tc: TrajectoryCalc;
+    private _uavSelect: HTMLSelectElementArray<UAV>;
+    private _ueberlappungLaengsSlider: HTMLInputElement;
+    private _ueberlappungQuerSlider: HTMLInputElement;
+
+    public get gebiet(): Feature<Polygon> | undefined {
+        return this._gebiet;
+    }
 
     constructor(map: Map, menuBereich: HTMLElement) {
         super({
@@ -96,13 +100,20 @@ export default class Zeichnen extends Draw {
         this._hoeheBegrenzen.addEventListener('change', this.hoehenBegrenzungUebergeben.bind(this))
     }
 
+    private aufloesungUebergeben() {
+        this._tc.aufloesung = parseInt(this._aufloesungSlider.value) / 100;
+    }
 
+    private ausrichtungUebergeben() {
+        this._tc.ausrichtung = parseInt(this._ausrichtungSlider.value);
+    }
 
-    public setFlightParameter(hoehe: number, laenge: number, dauer: number, anzahl: number) {
-        this._flugHoeheInput.value = hoehe.toFixed(1);
-        this._flugLaengeInput.value = laenge.toFixed(3);
-        this._flugDauerInput.value = dauer.toFixed(1);
-        this._bildAnzahlInput.value = anzahl.toFixed(0);
+    private button_click() {
+        if (this.getActive()) {
+            this.zeichnen_beenden();
+        } else {
+            this.zeichnen_starten();
+        }
     }
 
     private gebietUebergeben(): boolean {
@@ -129,14 +140,6 @@ export default class Zeichnen extends Draw {
         this._tc.ueberlappungQuer = parseInt(this._ueberlappungQuerSlider.value) / 100;
     }
 
-    private ausrichtungUebergeben() {
-        this._tc.ausrichtung = parseInt(this._ausrichtungSlider.value);
-    }
-
-    private aufloesungUebergeben() {
-        this._tc.aufloesung = parseInt(this._aufloesungSlider.value) / 100;
-    }
-
     private zeichnen_beenden() {
         this._button.value = "Gebiet zeichnen";
         this.setActive(false);
@@ -150,12 +153,33 @@ export default class Zeichnen extends Draw {
         this._map.setDoubleClickZoom(false);
     }
 
-    private button_click() {
-        if (this.getActive()) {
-            this.zeichnen_beenden();
+    public exportTrajectory(art: 'KML' | 'GPX') {
+        console.log("Export")
+        let trajectory = this._map.trajectorySource.getFeatures()
+        let point = trajectory.filter((feature) => {
+            let g = feature.getGeometry()
+            if (g !== undefined && g.getType() == 'Point') return feature
+            else return null;
+        });
+
+        let link = document.createElement('a');
+        let xmlData: XMLFeature;
+        if (art == 'GPX') {
+            xmlData = new GPX();
+            link.download = 'datei.gpx';
         } else {
-            this.zeichnen_starten();
+            xmlData = new KML();
+            link.download = 'datei.kml';
         }
+        let geom4326: Feature<Point>[] = [];
+        point.forEach((feature: Feature) => {
+            let f = <Feature<Point>>feature.clone()
+            f.getGeometry()?.transform('EPSG:3857', 'EPSG:4326')
+            geom4326.push(f);
+        })
+        let xmlDataTxt = xmlData.writeFeatures(geom4326);
+        link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(xmlDataTxt);
+        link.click()
     }
 
     public async getConfig(): Promise<Config> {
@@ -208,36 +232,10 @@ export default class Zeichnen extends Draw {
         this._hoeheBegrenzen.dispatchEvent(new Event('change'))
     }
 
-    public exportTrajectory(art: 'KML' | 'GPX') {
-        console.log("Export")
-        let trajectory = this._map.trajectorySource.getFeatures()
-        let point = trajectory.filter((feature) => {
-            let g = feature.getGeometry()
-            if (g !== undefined && g.getType() == 'Point') return feature
-            else return null;
-        });
-
-        let link = document.createElement('a');
-        let xmlData: XMLFeature;
-        if (art == 'GPX') {
-            xmlData = new GPX();
-            link.download = 'datei.gpx';
-        } else {
-            xmlData = new KML();
-            link.download = 'datei.kml';
-        }
-        let geom4326: Feature<Point>[] = [];
-        point.forEach((feature: Feature) => {
-            let f = <Feature<Point>>feature.clone()
-            f.getGeometry()?.transform('EPSG:3857', 'EPSG:4326')
-            geom4326.push(f);
-        })
-        let xmlDataTxt = xmlData.writeFeatures(geom4326);
-        link.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(xmlDataTxt);
-        link.click()
-    }
-
-    public get gebiet(): Feature<Polygon> | undefined {
-        return this._gebiet;
+    public setFlightParameter(hoehe: number, laenge: number, dauer: number, anzahl: number) {
+        this._flugHoeheInput.value = hoehe.toFixed(1);
+        this._flugLaengeInput.value = laenge.toFixed(3);
+        this._flugDauerInput.value = dauer.toFixed(1);
+        this._bildAnzahlInput.value = anzahl.toFixed(0);
     }
 }
