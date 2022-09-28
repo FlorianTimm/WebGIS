@@ -1,4 +1,4 @@
-import { Map } from "ol";
+import Map from '../openLayers/Map'
 import jsPdf from "jspdf";
 
 
@@ -43,7 +43,7 @@ export class PdfExport {
                 format[0],
                 format[1]
             );
-            pdf.text('Moin', 10, 18)
+            pdf.text('UAV-Flugplanung', 10, 18)
             pdf.save('map.pdf');
             // Reset original map size
             map.setSize(size);

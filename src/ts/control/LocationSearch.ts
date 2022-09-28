@@ -31,7 +31,9 @@ export default class LocationSearch extends Control {
         super({ element: div });
 
         this.textbox = document.createElement('input');
-        div.addEventListener("submit", e => this.handleInput(e))
+        this.textbox.placeholder = "Suche...";
+        this.textbox.style.fontSize = "15pt";
+        div.addEventListener("submit", e => this.handleInput(e));
         div.appendChild(this.textbox);
 
         div.style.position = 'inherit';
@@ -53,10 +55,10 @@ export default class LocationSearch extends Control {
         if (txt.length < 3) return;
 
         let view = this.getMap()?.getView();
-        let extent = view?.calculateExtent()
+        let extent = view?.calculateExtent();
         if (!extent) return;
 
-        let bbox4326 = transformExtent(extent, 'EPSG:3857', 'EPSG:4326')
+        let bbox4326 = transformExtent(extent, 'EPSG:3857', 'EPSG:4326');
 
         let params = {
             "addressdetails": "1",
@@ -64,7 +66,7 @@ export default class LocationSearch extends Control {
             "format": 'json',
             "limit": "1",
             "viewbox": bbox4326[1] + ',' + bbox4326[3] + ',' + bbox4326[0] + ',' + bbox4326[2]
-        }
+        };
 
         fetch("https://nominatim.openstreetmap.org/?" + new URLSearchParams(params).toString(), {
             method: 'GET',
