@@ -55,17 +55,17 @@ export default class Zeichnen extends Draw {
             this._uavSelect.updateListe(liste);
         })
 
-        this._ausrichtungSlider = HTML.createSlider(menuBereich, "Ausrichtung", 0, 360, 0, 5);
+        this._ausrichtungSlider = HTML.createSlider(menuBereich, "Ausrichtung [°]", 0, 360, 0, 5);
         this._aufloesungSlider = HTML.createSlider(menuBereich, "Auflösung [cm/px]", 1, 20, 10, 1);
         this._ueberlappungLaengsSlider = HTML.createSlider(menuBereich, "Überlappung längs [%]", 0, 90, 50, 5);
         this._ueberlappungQuerSlider = HTML.createSlider(menuBereich, "Überlappung quer [%]", 0, 90, 50, 5);
         this._hoeheBegrenzen = HTML.createCheckbox(menuBereich, "120m-Begrenzung")
 
 
-        this._flugHoeheInput = HTML.createNumberInput(menuBereich, "Flughöhe", undefined, true);
-        this._flugLaengeInput = HTML.createNumberInput(menuBereich, "Fluglänge", undefined, true);
+        this._flugHoeheInput = HTML.createInput(menuBereich, "Flughöhe", undefined, true);
+        this._flugLaengeInput = HTML.createInput(menuBereich, "Fluglänge", undefined, true);
         this._flugDauerInput = HTML.createInput(menuBereich, "Flugdauer", undefined, true);
-        this._bildAnzahlInput = HTML.createNumberInput(menuBereich, "Bilder", undefined, true);
+        this._bildAnzahlInput = HTML.createInput(menuBereich, "Bilder", undefined, true);
 
 
         this.on("drawend", (event: DrawEvent) => {
@@ -233,9 +233,15 @@ export default class Zeichnen extends Draw {
     }
 
     public setFlightParameter(hoehe: number, laenge: number, dauer: number, anzahl: number) {
-        this._flugHoeheInput.value = hoehe.toFixed(1);
-        this._flugLaengeInput.value = laenge.toFixed(3);
-        this._flugDauerInput.value = dauer.toFixed(1);
-        this._bildAnzahlInput.value = anzahl.toFixed(0);
+        this._flugHoeheInput.value = hoehe.toFixed(1) + ' m';
+        if (laenge > 2000) {
+            this._flugLaengeInput.value = (laenge / 1000).toFixed(3) + ' km';
+        } else {
+            this._flugLaengeInput.value = laenge.toFixed(0) + ' m';
+        }
+        let min = Math.floor(dauer / 60);
+        let sek = ("00" + (dauer % 60)).slice(-2);
+        this._flugDauerInput.value = min + ':' + sek + ' Minuten';
+        this._bildAnzahlInput.value = anzahl.toFixed(0) + ' Bilder';
     }
 }

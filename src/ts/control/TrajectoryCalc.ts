@@ -50,7 +50,12 @@ export default class TrajectoryCalc {
     }
 
     private recalcTrajectory() {
+        if (this._uav === undefined) return;
+        if (this._ueberlappungLaengs === undefined) return;
+        if (this._ueberlappungQuer === undefined) return;
+        if (this._aufloesung === undefined) return;
         if (!this._gebiet) return;
+
         let geom = <Polygon>this._gebiet.simplify(5);
         let anzahlBilder = 0;
         if (!this.calculateDistance()) return;
@@ -59,52 +64,50 @@ export default class TrajectoryCalc {
         let buff = new Polygon(buffer(polygon(poly4326.getCoordinates()), Math.max(this.distanceQuer, this.distanceLaengs) / 1000, { units: 'kilometers', steps: 1 }).geometry.coordinates);
         //buff.transform('EPSG:4326', 'EPSG:3857');
         //this.map.getTrajectorySource().addFeature(new Feature<LineString>({ geometry: new LineString(buff.getLinearRing(0).getCoordinates()) }))
-        let poly = polygon(buff.getCoordinates())
+        let poly = polygon(buff.getCoordinates());
 
         //
         // [minx, miny, maxx, maxy]
-        let extent = buff.getExtent()
-        let minx = (extent[0] + extent[2]) / 2
-        let miny = (extent[1] + extent[3]) / 2
+        let extent = buff.getExtent();
+        let minx = (extent[0] + extent[2]) / 2;
+        let miny = (extent[1] + extent[3]) / 2;
 
-        let maxStrecke = distance([extent[0], extent[1]], [extent[2], extent[3]]) / 2.
+        let maxStrecke = distance([extent[0], extent[1]], [extent[2], extent[3]]) / 2.;
 
-        let imgCoords: [number, number][] = []
+        let imgCoords: [number, number][] = [];
 
         for (let i = Math.floor(-maxStrecke / (this.distanceQuer / 1000.)); i < Math.ceil(maxStrecke / (this.distanceQuer / 1000.)) + 1; i++) {
-            let abstand = (i - 0.5) * this.distanceQuer / 1000.
+            let abstand = (i - 0.5) * this.distanceQuer / 1000.;
             let winkel = abstand < 0 ? this._ausrichtung + 180 : this._ausrichtung;
             if (winkel > 180) winkel -= 360;
             abstand = Math.abs(abstand);
 
-            let c0 = destination([minx, miny], abstand, winkel)
-            let c1 = destination(c0, maxStrecke, this._ausrichtung < -90 ? this._ausrichtung + 270 : this._ausrichtung - 90)
-            let c2 = destination(c0, maxStrecke, this._ausrichtung < 90 ? this._ausrichtung + 90 : this._ausrichtung - 270)
+            let c0 = destination([minx, miny], abstand, winkel);
+            let c1 = destination(c0, maxStrecke, this._ausrichtung < -90 ? this._ausrichtung + 270 : this._ausrichtung - 90);
+            let c2 = destination(c0, maxStrecke, this._ausrichtung < 90 ? this._ausrichtung + 90 : this._ausrichtung - 270);
 
 
-            //console.log(c1, c2)
+            //console.log(c1, c2);
 
-            let cut = lineIntersect(lineString([c1.geometry.coordinates, c2.geometry.coordinates]), poly).features
+            let cut = lineIntersect(lineString([c1.geometry.coordinates, c2.geometry.coordinates]), poly).features;
 
-            //console.log(poly, cut)
+            //console.log(poly, cut);
 
             cut.sort((a, b) => {
                 for (let x = 0; x < Math.min(a.geometry.coordinates.length, b.geometry.coordinates.length); x++) {
                     let diff = a.geometry.coordinates[x] - b.geometry.coordinates[x];
-                    if (diff != 0) return diff
+                    if (diff != 0) return diff;
                 }
                 return 0;
             });
 
-
-
             if (i % 2 != 0) {
-                cut = cut.reverse()
+                cut = cut.reverse();
             }
 
             let cutArray: Position[] = []
             cut.forEach((f) => {
-                let c = f.geometry.coordinates
+                let c = f.geometry.coordinates;
                 //lineCoords.push(c);
                 cutArray.push(c);
             })
@@ -114,7 +117,7 @@ export default class TrajectoryCalc {
                 let l = turfLength(line);
                 let versatz = (l % (this.distanceLaengs / 1000)) / 2;
                 for (; versatz < l; versatz += this.distanceLaengs / 1000) {
-                    let p = along(line, versatz)
+                    let p = along(line, versatz);
                     let c = toMercator(p.geometry.coordinates);
                     imgCoords.push([c[0], c[1]]);
                     this.map.trajectorySource.addFeature(new Feature({ geometry: new Point(c) }));
@@ -127,9 +130,12 @@ export default class TrajectoryCalc {
         //let line = new LineString(lineCoords);
         //this._map.getTrajectorySource().addFeature(new Feature({ geometry: line }))
         let spline = this.createSpline(imgCoords);
-        this.map.trajectorySource.addFeature(new Feature({ geometry: spline }))
+        this.map.trajectorySource.addFeature(new Feature({ geometry: spline }));
 
-        this.callback(this.flughoehe, turfLength(toWgs84(lineString(spline.getCoordinates()))), 0, anzahlBilder)
+        let laenge = turfLength(toWgs84(lineString(spline.getCoordinates()))) * 1000;
+        let zeit = Math.round(laenge / this._uav.maxspeed + anzahlBilder);
+
+        this.callback(this.flughoehe, laenge, zeit, anzahlBilder);
     }
 
 

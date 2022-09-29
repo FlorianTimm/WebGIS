@@ -8,10 +8,10 @@ db.exec("DROP TABLE IF EXISTS projekt");
 db.exec("DROP TABLE IF EXISTS uav");
 db.exec("CREATE TABLE IF NOT EXISTS uav(id INTEGER PRIMARY KEY AUTOINCREMENT, name text unique, focuslength real, sensorwidth real, sensorheight real, sensorpixelwidth real, sensorpixelheight real, minspeed real, maxspeed real, curveRadius real);");
 db.exec("CREATE TABLE IF NOT EXISTS projekt(id INTEGER PRIMARY KEY AUTOINCREMENT, projekt text unique, gebiet text, uav integer REFERENCES uav(id), aufloesung integer, ueberlappunglaengs real, ueberlappungquer real, ausrichtung integer, hoehenBegrenzung integer default 0); ");
-db.exec("INSERT INTO uav VALUES (1,'DJI Mini 3 Pro', 0.00665, 0.009846, 0.007153, 8064, 6048, 0, 50, 0);")
-db.exec("INSERT INTO uav VALUES (2,'Maginon QC-707SE (Aldi)', 0.00665, 0.009846, 0.007153, 1208, 720, 0, 50, 0);")
-db.exec("INSERT INTO uav VALUES (3,'Leica DMC III', 0.092, 0.1003392, 0.0569088, 25728, 14592, 0, 50, 10);")
-db.exec("INSERT INTO uav VALUES (4,'DJI Mini 2', 0.00427046263, 0.00617, 0.00455, 4000, 3000, 0, 50, 0);")
+db.exec("INSERT INTO uav VALUES (1,'DJI Mini 3 Pro', 0.00665, 0.009846, 0.007153, 8064, 6048, 0, 16, 0);")
+db.exec("INSERT INTO uav VALUES (2,'Maginon QC-707SE (Aldi)', 0.00665, 0.009846, 0.007153, 1208, 720, 0, 10, 0);")
+db.exec("INSERT INTO uav VALUES (3,'Leica DMC III', 0.092, 0.1003392, 0.0569088, 25728, 14592, 70, 200, 10);")
+db.exec("INSERT INTO uav VALUES (4,'DJI Mini 2', 0.00427046263, 0.00617, 0.00455, 4000, 3000, 0, 16, 0);")
 db.exec("INSERT INTO projekt (projekt, gebiet, uav, ueberlappunglaengs, ueberlappungquer, ausrichtung, aufloesung, hoehenBegrenzung) VALUES ('test', 'POLYGON((1109978.6465459517 7065454.731937807,1110001.2252990762 7066459.486451852,1110497.9578678177 7066978.797773719,1111130.1629553067 7066877.193384658,1111407.8611384388 7065845.2214850625,1111035.3117118822 7064467.917544465,1110516.0003900162 7064106.6574944705,1110041.8465743996 7064309.866272592,1109978.6465459517 7065454.731937807))', 4, 0.5, 0.5, 90, 0.1, 120);")
 
 
